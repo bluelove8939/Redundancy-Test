@@ -1,8 +1,15 @@
-import os
-import torch
-import torchvision
-
 from utils.model_presets import imagenet_clust_pretrained
 
-for name, config in imagenet_clust_pretrained.items():
-    print(name, config.generate())
+
+config = imagenet_clust_pretrained['ResNet18']
+model = config.generate()
+
+for name, param in model.state_dict().items():
+    if 'weight' not in name:
+        continue
+
+    try:
+        param.int_repr()
+        print(f"integer representaion valid: {name} {'weight' in name}")
+    except:
+        print(f"integer representaion invalid: {name}")
