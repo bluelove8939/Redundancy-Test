@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from redundant_op import test_redundancy
+from redundant_op import analysis_redundancy
 
 
 if __name__ == '__main__':
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     }
 
     for ifm_siz in range(4, 65, 4):
-        tr = test_redundancy(ifm_siz, ifm_siz, FW=3, FH=3, S=1)
+        tr = analysis_redundancy(ifm_siz, ifm_siz, FW=3, FH=3, S=1)
         categories.append(ifm_siz)
         total_op = 0
 

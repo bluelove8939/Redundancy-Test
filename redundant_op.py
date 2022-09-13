@@ -4,26 +4,48 @@ import tqdm
 import numpy as np
 
 
-def generate_ifm(W, H):
-    if_map = np.arange(1, W*H+1, 1).reshape((H, W))
-    return if_map
+def generate_ifm(W, H, P=0):
+    content = []
+    body = np.arange(1, W*H+1, 1).reshape((H, W))
 
-def generate_lowered_ifm(if_map: np.ndarray, W, H, FW, FH, S):
+    for _ in range(P):  # top padding
+        content.append([0] * (2*P+W))
+
+    for rbidx, rbvec in enumerate(body):  # side padding
+        content.append([0] * P + list(rbvec) + [0] * P)
+
+    for _ in range(P):  # bottom padding
+        content.append([0] * (2*P+W))
+
+    return np.array(content)
+
+def generate_lowered_ifm(if_map: np.ndarray, W, H, FW, FH, S=1, P=0):
     lowered_if_map = []
-    for rp in range(0, H - FH + 1, S):
-        for cp in range(0, W - FW + 1, S):
+    for rp in range(0, H - FH + (2*P) + 1, S):
+        for cp in range(0, W - FW + (2*P) + 1, S):
             lowered_if_map.append(list(if_map[rp:rp + FH, cp:cp + FW].flatten()))
 
     lowered_if_map = np.array(lowered_if_map)
-
     return lowered_if_map
 
-def test_redundancy(W, H, FW, FH, S):
-    OW = math.floor((W - FW) / S) + 1
-    OH = math.floor((H - FH) / S) + 1
+# def analysis_padding_sparsity(W, H, FW, FH, S=0, P=1):
+#     OW = math.floor((W - FW + (2 * P)) / S) + 1
+#     OH = math.floor((H - FH + (2 * P)) / S) + 1
+#
+#     if_map = generate_ifm(W, H, P)
+#     lowered_if_map = generate_lowered_ifm(if_map, W, H, FW, FH, S, P)
+#
+#     result = {
+#         'padded zero': 0,
+#         'total zero': 0,
+#     }
 
-    if_map = generate_ifm(W, H)
-    lowered_if_map = generate_lowered_ifm(if_map, W, H, FW, FH, S)
+def analysis_redundancy(W, H, FW, FH, S=0, P=1):
+    OW = math.floor((W - FW + (2*P)) / S) + 1
+    OH = math.floor((H - FH + (2*P)) / S) + 1
+
+    if_map = generate_ifm(W, H, P)
+    lowered_if_map = generate_lowered_ifm(if_map, W, H, FW, FH, S, P)
 
     # Exception Test
     result = {
@@ -66,13 +88,13 @@ if __name__ == '__main__':
     H = 64
     FW = 3
     FH = 3
-    P = 0
+    P = 2
     S = 1
     OW = math.floor((W + 2 * P - FW) / S) + 1
     OH = math.floor((H + 2 * P - FH) / S) + 1
 
-    if_map = generate_ifm(W, H)
-    lowered_if_map = generate_lowered_ifm(if_map, W, H, FW, FH)
+    if_map = generate_ifm(W, H, P)
+    lowered_if_map = generate_lowered_ifm(if_map, W, H, FW, FH, S, P)
 
     # Exception Test
     result = {
