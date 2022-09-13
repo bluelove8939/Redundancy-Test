@@ -12,6 +12,7 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
         'matched': 0,
         'stride exception': 0,
         'out of index exception': 0,
+        'step range exception': 0,
         'unknown exception': 0,
     }
 
@@ -32,8 +33,14 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
 
                 # out of index exception
                 oh = (lidx + offset) % OW
-                if oh - (dh // S) < 0 or oh - (dh // S) >= OW or lidx - dr < 0:
+                if oh - (dh // S) < 0 or oh - (dh // S) >= OW or (lidx + offset) - dr < 0:
                     result['out of index exception'] += 1
+                    continue
+
+                # step range exception
+                if lidx - dr < 0:
+                    # print(lidx, dr)
+                    result['step range exception'] += 1
                     continue
 
                 # unknown exception
@@ -53,6 +60,8 @@ def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=
     model = config.model_type(quantize=True)
     weights = config.weights
 
+    print(model)
+
     W, H = 226, 226  # size of input image
 
     save_logs.append("Test Configs")
@@ -64,7 +73,7 @@ def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=
         if 'weight' not in param_name:
             continue
 
-        if 'downsample' in param_name:
+        if 'downsample' in param_name:  # resnet18
             continue
 
         layer_id = param_name.split('.')[:-1]
@@ -83,7 +92,7 @@ def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=
         OW = math.floor((W - FW + (2 * P)) / S) + 1
         OH = math.floor((H - FH + (2 * P)) / S) + 1
 
-        save_logs.append(f"{layer_name:25s}  "
+        save_logs.append(f"{layer_name:30s}  "
                          f"type: {type(layer).__name__:15s}  "
                          f"C: {C:3d}  OC: {OC:3d}  (W, H): {W, H}  (FW, FH): {FW, FH}  S: {S}  P: {P}  (OW, OH): {OW, OH}")
 
@@ -97,6 +106,7 @@ def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=
             'matched': 0,
             'stride exception': 0,
             'out of index exception': 0,
+            'step range exception': 0,
             'unknown exception': 0,
         }
 
@@ -129,21 +139,23 @@ def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=
             file.write('\n\n\n')
 
             for lname, lresult in model_result.items():
-                file.write(f"layer: {lname:20s} |     {'    '.join([f'{k}: {v:8d}' for k, v in lresult.items()])}\n")
+                file.write(f"layer: {lname:30s} |     {'    '.join([f'{k}: {v:8d}' for k, v in lresult.items()])}\n")
 
     return model_result
 
 
 if __name__ == '__main__':
     model_name = 'ResNet18'
-    step_range = 128
+    # model_name = 'GoogLeNet'
+    step_range = 5000
 
     save_dirname = os.path.join(os.curdir, 'results', 'real_weight_redundancy')
     save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.txt')
 
     os.makedirs(save_dirname, exist_ok=True)
 
-    result = analyze_model_redundancy(config=imagenet_clust_pretrained['ResNet18'], max_iter=1, step_range=128, save_path=save_path)
+    result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=1,
+                                      step_range=step_range, save_path=save_path)
 
     for lname, lresult in result.items():
-        print(f"layer: {lname:20s} |     {'    '.join([f'{k}: {v:6d}' for k, v in lresult.items()])}")
+        print(f"layer: {lname:30s} |     {'    '.join([f'{k}: {v:9d}' for k, v in lresult.items()])}")
