@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from redundant_op import analysis_redundancy
+from redundant_op import analyze_redundancy
 
 
 if __name__ == '__main__':
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     }
 
     for stride in range(1, 6, 1):
-        tr = analysis_redundancy(64, 64, FW=5, FH=5, S=stride)
+        tr = analyze_redundancy(64, 64, FW=5, FH=5, S=stride)
         categories.append(stride)
         total_op = 0
 

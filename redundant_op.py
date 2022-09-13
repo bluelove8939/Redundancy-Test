@@ -40,7 +40,7 @@ def generate_lowered_ifm(if_map: np.ndarray, W, H, FW, FH, S=1, P=0):
 #         'total zero': 0,
 #     }
 
-def analysis_redundancy(W, H, FW, FH, S=0, P=1):
+def analyze_redundancy(W, H, FW, FH, S=0, P=1):
     OW = math.floor((W - FW + (2*P)) / S) + 1
     OH = math.floor((H - FH + (2*P)) / S) + 1
 
@@ -84,11 +84,11 @@ def analysis_redundancy(W, H, FW, FH, S=0, P=1):
 
 
 if __name__ == '__main__':
-    W = 64
-    H = 64
+    W = 224
+    H = 224
     FW = 3
     FH = 3
-    P = 2
+    P = 3
     S = 1
     OW = math.floor((W + 2 * P - FW) / S) + 1
     OH = math.floor((H + 2 * P - FH) / S) + 1
