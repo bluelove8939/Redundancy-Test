@@ -152,12 +152,14 @@ if __name__ == '__main__':
                 )
                 result['pattern matched'] += 1
 
-    with open(os.path.join(os.curdir, 'redundant_op_ulog.txt'), 'wt') as file:
+    os.makedirs(os.path.join(os.curdir, 'results', 'redundant_op'), exist_ok=True)
+
+    with open(os.path.join(os.curdir, 'results', 'redundant_op', 'redundant_op_ulog.txt'), 'wt') as file:
         file.write('\n\n'.join(
             [f"{exception_name}\n" + ('\n'.join(exception_log) if len(exception_log) > 0 else 'No exception') for
              exception_name, exception_log in logs.items()]))
 
-    with open(os.path.join(os.curdir, 'redundant_op_lifm.txt'), 'wt') as file:
+    with open(os.path.join(os.curdir, 'results', 'redundant_op', 'redundant_op_lifm.txt'), 'wt') as file:
         file.write('\n'.join(
             ['IFM'] +
             [f"lidx: {lidx:3d} -> " + '  '.join(map(lambda x: f"{x:3d}", line)) for lidx, line in enumerate(if_map)]
