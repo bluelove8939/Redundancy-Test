@@ -1,0 +1,50 @@
+# Test Configs
+# - test: real weight redundancy test
+# - model: resnet18
+# - step range: 16
+# - max iter: 1000
+
+
+# conv1                           type: ConvReLU2d       C:   3  OC:  64  (W, H): (226, 226)  (FW, FH): (7, 7)  S: 2  P: 3  (OW, OH): (113, 113)
+# layer1.0.conv1                  type: ConvReLU2d       C:  64  OC:  64  (W, H): (57, 57)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (57, 57)
+# layer1.0.conv2                  type: Conv2d           C:  64  OC:  64  (W, H): (57, 57)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (57, 57)
+# layer1.1.conv1                  type: ConvReLU2d       C:  64  OC:  64  (W, H): (57, 57)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (57, 57)
+# layer1.1.conv2                  type: Conv2d           C:  64  OC:  64  (W, H): (57, 57)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (57, 57)
+# layer2.0.conv1                  type: ConvReLU2d       C:  64  OC: 128  (W, H): (57, 57)  (FW, FH): (3, 3)  S: 2  P: 1  (OW, OH): (29, 29)
+# layer2.0.conv2                  type: Conv2d           C: 128  OC: 128  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (29, 29)
+# layer2.0.downsample.0           type: Conv2d           C:  64  OC: 128  (W, H): (57, 57)  (FW, FH): (1, 1)  S: 2  P: 0  (OW, OH): (29, 29)
+# layer2.1.conv1                  type: ConvReLU2d       C: 128  OC: 128  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (29, 29)
+# layer2.1.conv2                  type: Conv2d           C: 128  OC: 128  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (29, 29)
+# layer3.0.conv1                  type: ConvReLU2d       C: 128  OC: 256  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 2  P: 1  (OW, OH): (15, 15)
+# layer3.0.conv2                  type: Conv2d           C: 256  OC: 256  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (15, 15)
+# layer3.0.downsample.0           type: Conv2d           C: 128  OC: 256  (W, H): (29, 29)  (FW, FH): (1, 1)  S: 2  P: 0  (OW, OH): (15, 15)
+# layer3.1.conv1                  type: ConvReLU2d       C: 256  OC: 256  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (15, 15)
+# layer3.1.conv2                  type: Conv2d           C: 256  OC: 256  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (15, 15)
+# layer4.0.conv1                  type: ConvReLU2d       C: 256  OC: 512  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 2  P: 1  (OW, OH): (8, 8)
+# layer4.0.conv2                  type: Conv2d           C: 512  OC: 512  (W, H): (8, 8)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (8, 8)
+# layer4.0.downsample.0           type: Conv2d           C: 256  OC: 512  (W, H): (15, 15)  (FW, FH): (1, 1)  S: 2  P: 0  (OW, OH): (8, 8)
+# layer4.1.conv1                  type: ConvReLU2d       C: 512  OC: 512  (W, H): (8, 8)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (8, 8)
+# layer4.1.conv2                  type: Conv2d           C: 512  OC: 512  (W, H): (8, 8)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (8, 8)
+
+
+layer name                    , matched                       , stride exception              , out of index exception        , step range exception          , unknown exception             
+conv1                         ,                       23762746,                      369177328,                        2564983,                       92206898,                              0
+layer1.0.conv1                ,                        8977091,                              0,                        1283867,                       27284486,                              0
+layer1.0.conv2                ,                        6859402,                              0,                         864928,                       18183196,                              0
+layer1.1.conv1                ,                        6618307,                              0,                         865704,                       18296804,                              0
+layer1.1.conv2                ,                        6611295,                              0,                         841895,                       18217159,                              0
+layer2.0.conv1                ,                         496172,                        5290731,                          57548,                         795244,                              0
+layer2.0.conv2                ,                        1581507,                              0,                         455122,                        4742672,                              0
+layer2.0.downsample.0         ,                              0,                              0,                              0,                              0,                              0
+layer2.1.conv1                ,                        1556464,                              0,                         437903,                        4654579,                              0
+layer2.1.conv2                ,                        1670541,                              0,                         425604,                        4530935,                              0
+layer3.0.conv1                ,                         151190,                        1395900,                          29711,                         188324,                              0
+layer3.0.conv2                ,                         510256,                              0,                         217451,                        1045743,                              0
+layer3.0.downsample.0         ,                              0,                              0,                              0,                              0,                              0
+layer3.1.conv1                ,                         561703,                              0,                         212597,                         997125,                              0
+layer3.1.conv2                ,                         531469,                              0,                         207474,                        1022132,                              0
+layer4.0.conv1                ,                          64920,                         395904,                          14672,                          20760,                              0
+layer4.0.conv2                ,                         244716,                              0,                         117065,                         153099,                              0
+layer4.0.downsample.0         ,                              0,                              0,                              0,                              0,                              0
+layer4.1.conv1                ,                         255096,                              0,                         113710,                         139098,                              0
+layer4.1.conv2                ,                         258344,                              0,                         106394,                         123774,                              0
