@@ -40,11 +40,12 @@ class QuantModelConfig(_MetaModelConfig):
         return self.model_type(weights=self.weights, quantize=True)
 
 class ClustModelConfig(_MetaModelConfig):
-    def __init__(self, model_type, weights=None, default_traces=tuple()):
+    def __init__(self, model_type, weights=None, default_traces=tuple(), default_weights=None):
         super(ClustModelConfig, self).__init__(model_type, weights, default_traces)
+        self.default_weights = default_weights
 
     def generate(self):
-        model = self.model_type(quantize=True)
+        model = self.model_type(quantize=True, weights=self.default_weights)
         model.load_state_dict(self.weights)
         return model
 
@@ -112,9 +113,11 @@ imagenet_clust_pretrained = {
     'ResNet18': ClustModelConfig(
         torchvision.models.quantization.resnet18,
         weights=torch.load(os.path.join('C:/', 'torch_data', 'clustered_weights', 'model_dict_resnet18.pt')),
+        default_weights=torchvision.models.quantization.ResNet18_QuantizedWeights.IMAGENET1K_FBGEMM_V1,
     ),
     'GoogLeNet': ClustModelConfig(
         torchvision.models.quantization.googlenet,
         weights=torch.load(os.path.join('C:/', 'torch_data', 'clustered_weights', 'model_dict_googlenet.pt')),
+        default_weights=torchvision.models.quantization.GoogLeNet_QuantizedWeights.IMAGENET1K_FBGEMM_V1,
     ),
 }

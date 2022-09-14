@@ -1,20 +1,20 @@
 import os
 import math
-import torchvision
+import tqdm
+import torch
+import numpy as np
 
 from redundant_op import generate_ifm, generate_lowered_ifm
-from utils.model_presets import imagenet_clust_pretrained
+from utils.model_presets import imagenet_clust_pretrained, ClustModelConfig
+
+
+exception_keys = ['matched', 'stride exception', 'out of index exception',
+                              'step range exception', 'unknown exception',]
 
 
 def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P, OW, OH, offset: int=0):
     # Exception Test
-    result = {
-        'matched': 0,
-        'stride exception': 0,
-        'out of index exception': 0,
-        'step range exception': 0,
-        'unknown exception': 0,
-    }
+    result = {ek: 0 for ek in exception_keys}
 
     for i1 in range(0, FW * FH, 1):
         for i2 in range(i1 + 1, FW * FH, 1):
@@ -39,7 +39,6 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
 
                 # step range exception
                 if lidx - dr < 0:
-                    # print(lidx, dr)
                     result['step range exception'] += 1
                     continue
 
@@ -53,29 +52,50 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
     return result
 
 
-def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=None, save_path: str or None=None):
-    save_logs = []
-    model_result = {}
-
-    model = config.model_type(quantize=True)
-    weights = config.weights
-
-    print(model)
-
-    W, H = 226, 226  # size of input image
-
+def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
+                             max_iter: int or None=None, save_path: str or None=None):
+    # Test header
+    save_logs = list()
     save_logs.append("Test Configs")
+    save_logs.append(f"- test: real weight redundancy test")
     save_logs.append(f"- model: {config.model_type.__name__}")
     save_logs.append(f"- step range: {step_range}")
     save_logs.append(f"- max iter: {max_iter}\n\n")
 
+    print("\n\nTest Configs")
+    print(f"- test: real weight redundancy test")
+    print(f"- model: {config.model_type.__name__}")
+    print(f"- step range: {step_range}")
+    print(f"- max iter: {max_iter}\n")
+
+    model_result = {}
+    model = config.model_type(quantize=True, weights=config.default_weights)
+    weights = config.weights
+
+    # Extract input tensor shape of each layer
+    W, H = 226, 226  # size of input image
+    dummy_image = torch.tensor(np.zeros(shape=(1, 3, H, W), dtype=np.dtype('float32')))
+
+    input_shape_dict = {}
+
+    def generate_input_shape_hook(input_shape_dict, layer_name):
+        def hook(model, input_tensor, output_tensor):
+            input_shape_dict[layer_name] = input_tensor[0].int_repr().shape
+        return hook
+
+    for lname, layer in model.named_modules():
+        if 'conv' in type(layer).__name__.lower():
+            layer.register_forward_hook(generate_input_shape_hook(input_shape_dict, lname))
+
+    model.eval()
+    model(dummy_image)
+
+    # Redundancy test using real weight tensor
     for param_name, param in weights.items():
-        if 'weight' not in param_name:
+        if 'weight' not in param_name:  # iff the given parameter is weight
             continue
 
-        if 'downsample' in param_name:  # resnet18
-            continue
-
+        # Extract details of each convolution layer
         layer_id = param_name.split('.')[:-1]
         layer_name = '.'.join(layer_id)
 
@@ -83,10 +103,12 @@ def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=
         for attr in layer_id:
             layer = getattr(layer, attr)
 
-        C = layer.in_channels
+        if 'conv' not in type(layer).__name__.lower():  # iff the given layer is convolution layer
+            continue
+
+        _, C, W, H = input_shape_dict[layer_name]
         OC = layer.out_channels
-        FW = layer.kernel_size[0]
-        FH = layer.kernel_size[1]
+        FW, FH = layer.kernel_size
         S = layer.stride[0]
         P = layer.padding[0]
         OW = math.floor((W - FW + (2 * P)) / S) + 1
@@ -94,68 +116,69 @@ def analyze_model_redundancy(config, step_range: int=128, max_iter: int or None=
 
         save_logs.append(f"{layer_name:30s}  "
                          f"type: {type(layer).__name__:15s}  "
-                         f"C: {C:3d}  OC: {OC:3d}  (W, H): {W, H}  (FW, FH): {FW, FH}  S: {S}  P: {P}  (OW, OH): {OW, OH}")
+                         f"C: {C:3d}  OC: {OC:3d}  (W, H): {W, H}  (FW, FH): {FW, FH}  "
+                         f"S: {S}  P: {P}  (OW, OH): {OW, OH}")
 
+        # Extract weight and generate lowered weight
         weights = param.int_repr().detach().numpy()
         lowered_weights = weights.reshape((OC, C, FW*FH))
 
+        # Generate lowered input feature map
         if_map = generate_ifm(W, H, P)
         lowered_if_map = generate_lowered_ifm(if_map, W, H, FW, FH, S, P)
 
-        result = {
-            'matched': 0,
-            'stride exception': 0,
-            'out of index exception': 0,
-            'step range exception': 0,
-            'unknown exception': 0,
-        }
-
+        # Start testing
+        result = {ek: 0 for ek in exception_keys}
         iter_cnt = 0
 
-        for oc_idx in range(OC):
-            for c_idx in range(C):
-                if max_iter is not None and iter_cnt > max_iter:
-                    break
+        with tqdm.tqdm(ncols=100, total=min(max_iter, OC*C), desc=f"{layer_name:30s}", leave=False) as pbar:
+            for oc_idx in range(OC):
+                for c_idx in range(C):  # shape of lowered weights: (OC, C, FH*FW)
+                    if max_iter is not None and iter_cnt > max_iter:
+                        break
 
-                lowered_kernel = lowered_weights[oc_idx, c_idx]
+                    lowered_kernel = lowered_weights[oc_idx, c_idx]
 
-                for l_offset in range(0, lowered_if_map.shape[0], step_range):
-                    lowered_if_map_part = lowered_if_map[l_offset:l_offset+step_range]
-                    tmp_result = analyze_with_real_kernel(lowered_if_map_part, lowered_kernel,
-                                                          W, H, FW, FH, S, P, OW, OH, offset=l_offset)
+                    for l_offset in range(0, lowered_if_map.shape[0], step_range):  # split IFM with step range
+                        lowered_if_map_part = lowered_if_map[l_offset:l_offset+step_range]
+                        tmp_result = analyze_with_real_kernel(lowered_if_map_part, lowered_kernel,
+                                                              W, H, FW, FH, S, P, OW, OH, offset=l_offset)
 
-                    for key in tmp_result:
-                        result[key] += tmp_result[key]
+                        for key in tmp_result:
+                            result[key] += tmp_result[key]
 
-                iter_cnt += 1
+                    iter_cnt += 1
+                    pbar.update(1)
 
         model_result[layer_name] = result
 
-        W, H = OW, OH
-
+    # Save test result as a text file (if needed)
     if save_path is not None:
         with open(save_path, 'wt') as file:
-            file.write('\n'.join(save_logs))
+            # Logs are saved as comments
+            file.write('# ' + '\n# '.join(save_logs))
             file.write('\n\n\n')
 
+            # Test results are saved as CSV format
+            file.write(f"{'layer name':30s}, {', '.join([f'{ek:30s}' for ek in exception_keys])}\n")
             for lname, lresult in model_result.items():
-                file.write(f"layer: {lname:30s} |     {'    '.join([f'{k}: {v:8d}' for k, v in lresult.items()])}\n")
+                file.write(f"{lname:30s}, {', '.join([f'{lresult[ek]:30d}' for ek in exception_keys])}\n")
+
+    # Print result
+    for lname, lresult in model_result.items():
+        print(f"{lname:30s}  {'    '.join([f'{k}: {v:9d}' for k, v in lresult.items()])}")
 
     return model_result
 
 
 if __name__ == '__main__':
-    model_name = 'ResNet18'
-    # model_name = 'GoogLeNet'
-    step_range = 5000
+    max_iter = 1000
 
     save_dirname = os.path.join(os.curdir, 'results', 'real_weight_redundancy')
-    save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.txt')
-
     os.makedirs(save_dirname, exist_ok=True)
 
-    result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=1,
-                                      step_range=step_range, save_path=save_path)
-
-    for lname, lresult in result.items():
-        print(f"layer: {lname:30s} |     {'    '.join([f'{k}: {v:9d}' for k, v in lresult.items()])}")
+    for model_name in imagenet_clust_pretrained.keys():
+        for step_range in [4, 8, 16, 32, 64, 128]:
+            save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.csv')
+            result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=max_iter,
+                                              step_range=step_range, save_path=save_path)
