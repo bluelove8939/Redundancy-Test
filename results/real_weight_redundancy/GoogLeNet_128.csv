@@ -1,0 +1,50 @@
+# Test Configs
+# - test: real weight redundancy test
+# - model: googlenet
+# - step range: 128
+# - max iter: None
+
+
+# conv1.conv                      type: ConvReLU2d       C:   3  OC:  64  (W, H): (226, 226)  (FW, FH): (7, 7)  S: 2  P: 3  (OW, OH): (113, 113)
+# conv3.conv                      type: ConvReLU2d       C:  64  OC: 192  (W, H): (56, 56)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (56, 56)
+# inception3a.branch2.1.conv      type: ConvReLU2d       C:  96  OC: 128  (W, H): (28, 28)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (28, 28)
+# inception3a.branch3.1.conv      type: ConvReLU2d       C:  16  OC:  32  (W, H): (28, 28)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (28, 28)
+# inception3b.branch2.1.conv      type: ConvReLU2d       C: 128  OC: 192  (W, H): (28, 28)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (28, 28)
+# inception3b.branch3.1.conv      type: ConvReLU2d       C:  32  OC:  96  (W, H): (28, 28)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (28, 28)
+# inception4a.branch2.1.conv      type: ConvReLU2d       C:  96  OC: 208  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4a.branch3.1.conv      type: ConvReLU2d       C:  16  OC:  48  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4b.branch2.1.conv      type: ConvReLU2d       C: 112  OC: 224  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4b.branch3.1.conv      type: ConvReLU2d       C:  24  OC:  64  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4c.branch2.1.conv      type: ConvReLU2d       C: 128  OC: 256  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4c.branch3.1.conv      type: ConvReLU2d       C:  24  OC:  64  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4d.branch2.1.conv      type: ConvReLU2d       C: 144  OC: 288  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4d.branch3.1.conv      type: ConvReLU2d       C:  32  OC:  64  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4e.branch2.1.conv      type: ConvReLU2d       C: 160  OC: 320  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception4e.branch3.1.conv      type: ConvReLU2d       C:  32  OC: 128  (W, H): (14, 14)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (14, 14)
+# inception5a.branch2.1.conv      type: ConvReLU2d       C: 160  OC: 320  (W, H): (7, 7)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (7, 7)
+# inception5a.branch3.1.conv      type: ConvReLU2d       C:  32  OC: 128  (W, H): (7, 7)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (7, 7)
+# inception5b.branch2.1.conv      type: ConvReLU2d       C: 192  OC: 384  (W, H): (7, 7)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (7, 7)
+# inception5b.branch3.1.conv      type: ConvReLU2d       C:  48  OC: 128  (W, H): (7, 7)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (7, 7)
+
+
+layer name                    , total               , matched                       , stride exception              , out of index exception        , step range exception          , unknown exception             
+conv1.conv                    ,            120130752,                        7381707,                       55417460,                         294281,                        8017113,                              0
+conv3.conv                    ,            346816512,                      127628973,                              0,                        6046764,                       59044007,                              0
+inception3a.branch2.1.conv    ,             86704128,                       38552394,                              0,                        2998641,                        6617925,                              0
+inception3a.branch3.1.conv    ,              3612672,                        1596155,                              0,                         126745,                         284140,                              0
+inception3b.branch2.1.conv    ,            173408256,                       77170720,                              0,                        5872168,                       13295032,                              0
+inception3b.branch3.1.conv    ,             21676032,                        9706661,                              0,                         727351,                        1608228,                              0
+inception4a.branch2.1.conv    ,             35223552,                       16267074,                              0,                        2346116,                         955646,                              0
+inception4a.branch3.1.conv    ,              1354752,                         627835,                              0,                          88893,                          35912,                              0
+inception4b.branch2.1.conv    ,             44255232,                       20456904,                              0,                        2956174,                        1173358,                              0
+inception4b.branch3.1.conv    ,              2709504,                        1256592,                              0,                         179757,                          68931,                              0
+inception4c.branch2.1.conv    ,             57802752,                       26811474,                              0,                        3797853,                        1503313,                              0
+inception4c.branch3.1.conv    ,              2709504,                        1249949,                              0,                         185983,                          69544,                              0
+inception4d.branch2.1.conv    ,             73156608,                       33992649,                              0,                        4851702,                        1798209,                              0
+inception4d.branch3.1.conv    ,              3612672,                        1680814,                              0,                         237613,                          88613,                              0
+inception4e.branch2.1.conv    ,             90316800,                       42105862,                              0,                        6014038,                        2056100,                              0
+inception4e.branch3.1.conv    ,              7225344,                        3367514,                              0,                         474353,                         172409,                              0
+inception5a.branch2.1.conv    ,             22579200,                        9607353,                              0,                        2936745,                              0,                              0
+inception5a.branch3.1.conv    ,              1806336,                         765784,                              0,                         237736,                              0,                              0
+inception5b.branch2.1.conv    ,             32514048,                       13520277,                              0,                        4559792,                              0,                              0
+inception5b.branch3.1.conv    ,              2709504,                        1124392,                              0,                         383485,                              0,                              0
