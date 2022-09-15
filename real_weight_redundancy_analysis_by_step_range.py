@@ -42,7 +42,8 @@ if __name__ == '__main__':
 
             _, filename = os.path.split(fp)
             model_name, step_range = filename.split('_')
-            step_range = int(step_range.split('.')[0])
+            step_range = step_range.split('.')[0]
+            step_range = int(step_range) if step_range != 'None' else -1
 
             if model_name not in raw_ratios.keys():
                 raw_ratios[model_name] = {}
@@ -70,7 +71,7 @@ if __name__ == '__main__':
 
             for lname, rresults in mresults.items():
                 if not is_header_added:
-                    ofile.write(f"{'layer name':30s}, " + ', '.join([f'{"step" + str(h):>8s}' for h in sorted(rresults.keys())]) + '\n')
+                    ofile.write(f"{'layer name':30s}, " + ', '.join([f'{"step" + str(h) if h != -1 else "no step":>8s}' for h in sorted(rresults.keys())]) + '\n')
                     is_header_added = True
 
                 ofile.write(f"{lname:30s}, " + ', '.join([f'{rresults[h]*100:8.2f}' for h in sorted(rresults.keys())]) + '\n')

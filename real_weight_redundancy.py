@@ -49,6 +49,8 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
 
                 result['matched'] += 1
 
+            break  # check only one redundancy element (duplicated redunadncy)
+
     return result
 
 
@@ -135,6 +137,7 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
         # Start testing
         result = {ek: 0 for ek in exception_keys}
         iter_cnt = 0
+        step_range = lowered_if_map.shape[0] if step_range is None else step_range
 
         with tqdm.tqdm(ncols=100, total=(min(max_iter, OC*C) if max_iter is not None else OC*C),
                        desc=f"{layer_name:30s}", leave=False) as pbar:
@@ -185,7 +188,7 @@ if __name__ == '__main__':
     os.makedirs(save_dirname, exist_ok=True)
 
     for model_name in imagenet_clust_pretrained.keys():
-        for step_range in [32, 64, 128, 256]:
+        for step_range in [16, 32, 64, 128, 256, None]:
             save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.csv')
             result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=max_iter,
                                               step_range=step_range, save_path=save_path)
