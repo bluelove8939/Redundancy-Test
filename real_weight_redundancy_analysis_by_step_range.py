@@ -37,8 +37,8 @@ if __name__ == '__main__':
             ratios = {}
 
             for lname, lresult in raw_results.items():
-                total = np.sum(np.array(list(lresult.values())))
-                ratios[lname] = float(lresult['matched'] / (total + 1e-7))
+                # total = np.sum(np.array(list(lresult.values())))
+                ratios[lname] = float(lresult['matched'] / (lresult['total'] + 1e-7))
 
             _, filename = os.path.split(fp)
             model_name, step_range = filename.split('_')

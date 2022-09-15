@@ -77,6 +77,7 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
     dummy_image = torch.tensor(np.zeros(shape=(1, 3, H, W), dtype=np.dtype('float32')))
 
     input_shape_dict = {}
+    total_operation_dict = {}
 
     def generate_input_shape_hook(input_shape_dict, layer_name):
         def hook(model, input_tensor, output_tensor):
@@ -114,6 +115,9 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
         OW = math.floor((W - FW + (2 * P)) / S) + 1
         OH = math.floor((H - FH + (2 * P)) / S) + 1
 
+        if FW == 1 and FH == 1:  # if kernel shape is (1, 1), redundancy cannot occur
+            continue
+
         save_logs.append(f"{layer_name:30s}  "
                          f"type: {type(layer).__name__:15s}  "
                          f"C: {C:3d}  OC: {OC:3d}  (W, H): {W, H}  (FW, FH): {FW, FH}  "
@@ -126,12 +130,14 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
         # Generate lowered input feature map
         if_map = generate_ifm(W, H, P)
         lowered_if_map = generate_lowered_ifm(if_map, W, H, FW, FH, S, P)
+        total_operation_dict[layer_name] = 0
 
         # Start testing
         result = {ek: 0 for ek in exception_keys}
         iter_cnt = 0
 
-        with tqdm.tqdm(ncols=100, total=min(max_iter, OC*C), desc=f"{layer_name:30s}", leave=False) as pbar:
+        with tqdm.tqdm(ncols=100, total=(min(max_iter, OC*C) if max_iter is not None else OC*C),
+                       desc=f"{layer_name:30s}", leave=False) as pbar:
             for oc_idx in range(OC):
                 for c_idx in range(C):  # shape of lowered weights: (OC, C, FH*FW)
                     if max_iter is not None and iter_cnt > max_iter:
@@ -140,9 +146,10 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
                     lowered_kernel = lowered_weights[oc_idx, c_idx]
 
                     for l_offset in range(0, lowered_if_map.shape[0], step_range):  # split IFM with step range
-                        lowered_if_map_part = lowered_if_map[l_offset:l_offset+step_range]
+                        lowered_if_map_part = lowered_if_map[l_offset:min(l_offset+step_range, lowered_if_map.shape[0])]
                         tmp_result = analyze_with_real_kernel(lowered_if_map_part, lowered_kernel,
                                                               W, H, FW, FH, S, P, OW, OH, offset=l_offset)
+                        total_operation_dict[layer_name] += lowered_if_map_part.shape[0] * lowered_if_map_part.shape[1]
 
                         for key in tmp_result:
                             result[key] += tmp_result[key]
@@ -160,9 +167,9 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
             file.write('\n\n\n')
 
             # Test results are saved as CSV format
-            file.write(f"{'layer name':30s}, {', '.join([f'{ek:30s}' for ek in exception_keys])}\n")
+            file.write(f"{'layer name':30s}, {'total':20s}, {', '.join([f'{ek:30s}' for ek in exception_keys])}\n")
             for lname, lresult in model_result.items():
-                file.write(f"{lname:30s}, {', '.join([f'{lresult[ek]:30d}' for ek in exception_keys])}\n")
+                file.write(f"{lname:30s}, {total_operation_dict[lname]:20d}, {', '.join([f'{lresult[ek]:30d}' for ek in exception_keys])}\n")
 
     # Print result
     for lname, lresult in model_result.items():
@@ -172,13 +179,13 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
 
 
 if __name__ == '__main__':
-    max_iter = 1000
+    max_iter = None
 
     save_dirname = os.path.join(os.curdir, 'results', 'real_weight_redundancy')
     os.makedirs(save_dirname, exist_ok=True)
 
     for model_name in imagenet_clust_pretrained.keys():
-        for step_range in [4, 8, 16, 32, 64, 128]:
+        for step_range in [32, 64, 128, 256]:
             save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.csv')
             result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=max_iter,
                                               step_range=step_range, save_path=save_path)
