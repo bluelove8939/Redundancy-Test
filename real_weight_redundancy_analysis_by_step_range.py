@@ -1,5 +1,4 @@
 import os
-import numpy as np
 
 
 def parse_csvfile(filepath):
@@ -8,7 +7,7 @@ def parse_csvfile(filepath):
     with open(filepath, 'rt') as file:
         content = file.readlines()
         comment_removed = list(filter(lambda x: not (x.startswith('#') or len(x.strip()) == 0), content))
-        header = [h.strip() for h in comment_removed[0].split(',')]
+        header = [h.strip() for h in comment_removed[0].split(',')]  # consider first row as a header
 
         for line in comment_removed[1:]:
             line_splitted = [el.strip() for el in line.split(',')]
@@ -22,24 +21,37 @@ if __name__ == '__main__':
     output_dirname = os.path.join(os.curdir, 'results', 'real_weight_redundancy_analysis_by_step_range')
     output_filename = 'ratios_result.csv'
 
-    filepath = []
-    raw_ratios = {}
-    results = {}
+    filepath = []    # target files
+    raw_ratios = {}  # raw ratio data
+    results = {}     # processed ratio data
 
 
+    # Read all file paths
     for filename in os.listdir(result_dirname):
         if os.path.isfile(os.path.join(result_dirname, filename)):
             filepath.append(os.path.join(result_dirname, filename))
 
+    # Read all files
     for fp in filepath:
         with open(fp, 'rt') as file:
+            # Generaing raw results (number of redundant operations)
             raw_results = parse_csvfile(fp)
+
+            # Calculate redundant operation ratios
+            tsum, msum = 0, 0
+            for k, v in raw_results.items():
+                tsum += v['total']
+                msum += v['matched']
+
             ratios = {}
 
             for lname, lresult in raw_results.items():
                 # total = np.sum(np.array(list(lresult.values())))
                 ratios[lname] = float(lresult['matched'] / (lresult['total'] + 1e-7))
 
+            ratios['overall ratio'] = msum / tsum
+
+            # Save calculated ratios
             _, filename = os.path.split(fp)
             model_name, step_range = filename.split('_')
             step_range = step_range.split('.')[0]
@@ -50,6 +62,7 @@ if __name__ == '__main__':
 
             raw_ratios[model_name][step_range] = ratios
 
+    # Processing raw ratio data
     for model_name, mresults in raw_ratios.items():
         results[model_name] = {}
 
@@ -62,6 +75,7 @@ if __name__ == '__main__':
 
     print(results)
 
+    # Save processed ratios as CSV file format
     os.makedirs(output_dirname, exist_ok=True)
 
     with open(os.path.join(output_dirname, output_filename), 'wt') as ofile:

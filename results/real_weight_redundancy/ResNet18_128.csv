@@ -12,14 +12,17 @@
 # layer1.1.conv2                  type: Conv2d           C:  64  OC:  64  (W, H): (57, 57)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (57, 57)
 # layer2.0.conv1                  type: ConvReLU2d       C:  64  OC: 128  (W, H): (57, 57)  (FW, FH): (3, 3)  S: 2  P: 1  (OW, OH): (29, 29)
 # layer2.0.conv2                  type: Conv2d           C: 128  OC: 128  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (29, 29)
+# layer2.0.downsample.0           type: Conv2d           C:  64  OC: 128  (W, H): (57, 57)  (FW, FH): (1, 1)  S: 2  P: 0  (OW, OH): (29, 29)
 # layer2.1.conv1                  type: ConvReLU2d       C: 128  OC: 128  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (29, 29)
 # layer2.1.conv2                  type: Conv2d           C: 128  OC: 128  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (29, 29)
 # layer3.0.conv1                  type: ConvReLU2d       C: 128  OC: 256  (W, H): (29, 29)  (FW, FH): (3, 3)  S: 2  P: 1  (OW, OH): (15, 15)
 # layer3.0.conv2                  type: Conv2d           C: 256  OC: 256  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (15, 15)
+# layer3.0.downsample.0           type: Conv2d           C: 128  OC: 256  (W, H): (29, 29)  (FW, FH): (1, 1)  S: 2  P: 0  (OW, OH): (15, 15)
 # layer3.1.conv1                  type: ConvReLU2d       C: 256  OC: 256  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (15, 15)
 # layer3.1.conv2                  type: Conv2d           C: 256  OC: 256  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (15, 15)
 # layer4.0.conv1                  type: ConvReLU2d       C: 256  OC: 512  (W, H): (15, 15)  (FW, FH): (3, 3)  S: 2  P: 1  (OW, OH): (8, 8)
 # layer4.0.conv2                  type: Conv2d           C: 512  OC: 512  (W, H): (8, 8)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (8, 8)
+# layer4.0.downsample.0           type: Conv2d           C: 256  OC: 512  (W, H): (15, 15)  (FW, FH): (1, 1)  S: 2  P: 0  (OW, OH): (8, 8)
 # layer4.1.conv1                  type: ConvReLU2d       C: 512  OC: 512  (W, H): (8, 8)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (8, 8)
 # layer4.1.conv2                  type: Conv2d           C: 512  OC: 512  (W, H): (8, 8)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (8, 8)
 
@@ -32,13 +35,16 @@ layer1.1.conv1                ,            119771136,                       4468
 layer1.1.conv2                ,            119771136,                       44824665,                              0,                        1935627,                       19779228,                              0
 layer2.0.conv1                ,             62005248,                        4390940,                       29404724,                         206112,                         445584,                              0
 layer2.0.conv2                ,            124010496,                       54702646,                              0,                        4132337,                       10060578,                              0
+layer2.0.downsample.0         ,              6889472,                              0,                              0,                              0,                              0,                              0
 layer2.1.conv1                ,            124010496,                       55090929,                              0,                        4026451,                        9779022,                              0
 layer2.1.conv2                ,            124010496,                       55271738,                              0,                        3949729,                        9674094,                              0
 layer3.0.conv1                ,             66355200,                        4715303,                       31598775,                         405719,                         145553,                              0
 layer3.0.conv2                ,            132710400,                       62383731,                              0,                        8123790,                        3221604,                              0
+layer3.0.downsample.0         ,              7372800,                              0,                              0,                              0,                              0,                              0
 layer3.1.conv1                ,            132710400,                       62670665,                              0,                        7905945,                        3152515,                              0
 layer3.1.conv2                ,            132710400,                       62811930,                              0,                        7809247,                        3106823,                              0
 layer4.0.conv1                ,             75497472,                        5137419,                       35965632,                         840245,                              0,                              0
 layer4.0.conv2                ,            150994944,                       66703331,                              0,                       17183005,                              0,                              0
+layer4.0.downsample.0         ,              8388608,                              0,                              0,                              0,                              0,                              0
 layer4.1.conv1                ,            150994944,                       67112975,                              0,                       16773681,                              0,                              0
 layer4.1.conv2                ,            150994944,                       67249030,                              0,                       16654522,                              0,                              0
