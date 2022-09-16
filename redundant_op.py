@@ -84,11 +84,11 @@ def analyze_redundancy(W, H, FW, FH, S=0, P=1):
 
 
 if __name__ == '__main__':
-    W = 224
-    H = 224
+    W = 64
+    H = 64
     FW = 3
     FH = 3
-    P = 3
+    P = 0
     S = 1
     OW = math.floor((W + 2 * P - FW) / S) + 1
     OH = math.floor((H + 2 * P - FH) / S) + 1
