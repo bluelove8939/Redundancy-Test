@@ -75,7 +75,7 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
     weights = config.weights
 
     # Extract input tensor shape of each layer
-    W, H = 226, 226  # size of input image
+    W, H = 224, 224  # size of input image
     dummy_image = torch.tensor(np.zeros(shape=(1, 3, H, W), dtype=np.dtype('float32')))
 
     input_shape_dict = {}

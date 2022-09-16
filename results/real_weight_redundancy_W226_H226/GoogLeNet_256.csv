@@ -5,7 +5,7 @@
 # - max iter: None
 
 
-# conv1.conv                      type: ConvReLU2d       C:   3  OC:  64  (W, H): (224, 224)  (FW, FH): (7, 7)  S: 2  P: 3  (OW, OH): (112, 112)
+# conv1.conv                      type: ConvReLU2d       C:   3  OC:  64  (W, H): (226, 226)  (FW, FH): (7, 7)  S: 2  P: 3  (OW, OH): (113, 113)
 # conv2.conv                      type: ConvReLU2d       C:  64  OC:  64  (W, H): (56, 56)  (FW, FH): (1, 1)  S: 1  P: 0  (OW, OH): (56, 56)
 # conv3.conv                      type: ConvReLU2d       C:  64  OC: 192  (W, H): (56, 56)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (56, 56)
 # inception3a.branch1.conv        type: ConvReLU2d       C: 192  OC:  64  (W, H): (28, 28)  (FW, FH): (1, 1)  S: 1  P: 0  (OW, OH): (28, 28)
@@ -65,7 +65,7 @@
 
 
 layer name                    , total               , matched                       , stride exception              , out of index exception        , step range exception          , unknown exception             
-conv1.conv                    ,            118013952,                       10214652,                       54440960,                         291667,                        4910257,                              0
+conv1.conv                    ,            120130752,                       10341756,                       55417460,                         294281,                        5057064,                              0
 conv2.conv                    ,             12845056,                              0,                              0,                              0,                              0,                              0
 conv3.conv                    ,            346816512,                      157322217,                              0,                        6046764,                       29350763,                              0
 inception3a.branch1.conv      ,              9633792,                              0,                              0,                              0,                              0,                              0

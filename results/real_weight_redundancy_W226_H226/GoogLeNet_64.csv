@@ -1,11 +1,11 @@
 # Test Configs
 # - test: real weight redundancy test
 # - model: googlenet
-# - step range: 256
+# - step range: 64
 # - max iter: None
 
 
-# conv1.conv                      type: ConvReLU2d       C:   3  OC:  64  (W, H): (224, 224)  (FW, FH): (7, 7)  S: 2  P: 3  (OW, OH): (112, 112)
+# conv1.conv                      type: ConvReLU2d       C:   3  OC:  64  (W, H): (226, 226)  (FW, FH): (7, 7)  S: 2  P: 3  (OW, OH): (113, 113)
 # conv2.conv                      type: ConvReLU2d       C:  64  OC:  64  (W, H): (56, 56)  (FW, FH): (1, 1)  S: 1  P: 0  (OW, OH): (56, 56)
 # conv3.conv                      type: ConvReLU2d       C:  64  OC: 192  (W, H): (56, 56)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (56, 56)
 # inception3a.branch1.conv        type: ConvReLU2d       C: 192  OC:  64  (W, H): (28, 28)  (FW, FH): (1, 1)  S: 1  P: 0  (OW, OH): (28, 28)
@@ -65,50 +65,50 @@
 
 
 layer name                    , total               , matched                       , stride exception              , out of index exception        , step range exception          , unknown exception             
-conv1.conv                    ,            118013952,                       10214652,                       54440960,                         291667,                        4910257,                              0
+conv1.conv                    ,            120130752,                        6588027,                       55417460,                         294281,                        8810793,                              0
 conv2.conv                    ,             12845056,                              0,                              0,                              0,                              0,                              0
-conv3.conv                    ,            346816512,                      157322217,                              0,                        6046764,                       29350763,                              0
+conv3.conv                    ,            346816512,                       85341956,                              0,                        6046764,                      101331024,                              0
 inception3a.branch1.conv      ,              9633792,                              0,                              0,                              0,                              0,                              0
 inception3a.branch2.0.conv    ,             14450688,                              0,                              0,                              0,                              0,                              0
-inception3a.branch2.1.conv    ,             86704128,                       42168024,                              0,                        2998641,                        3002295,                              0
+inception3a.branch2.1.conv    ,             86704128,                       31339779,                              0,                        2998641,                       13830540,                              0
 inception3a.branch3.0.conv    ,              2408448,                              0,                              0,                              0,                              0,                              0
-inception3a.branch3.1.conv    ,              3612672,                        1751951,                              0,                         126745,                         128344,                              0
+inception3a.branch3.1.conv    ,              3612672,                        1285378,                              0,                         126745,                         594917,                              0
 inception3a.branch4.1.conv    ,              4816896,                              0,                              0,                              0,                              0,                              0
 inception3b.branch1.conv      ,             25690112,                              0,                              0,                              0,                              0,                              0
 inception3b.branch2.0.conv    ,             25690112,                              0,                              0,                              0,                              0,                              0
-inception3b.branch2.1.conv    ,            173408256,                       84423964,                              0,                        5872168,                        6041788,                              0
+inception3b.branch2.1.conv    ,            173408256,                       62699228,                              0,                        5872168,                       27766524,                              0
 inception3b.branch3.0.conv    ,              6422528,                              0,                              0,                              0,                              0,                              0
-inception3b.branch3.1.conv    ,             21676032,                       10584443,                              0,                         727351,                         730446,                              0
+inception3b.branch3.1.conv    ,             21676032,                        7956080,                              0,                         727351,                        3358809,                              0
 inception3b.branch4.1.conv    ,             12845056,                              0,                              0,                              0,                              0,                              0
 inception4a.branch1.conv      ,             18063360,                              0,                              0,                              0,                              0,                              0
 inception4a.branch2.0.conv    ,              9031680,                              0,                              0,                              0,                              0,                              0
-inception4a.branch2.1.conv    ,             35223552,                       17222720,                              0,                        2346116,                              0,                              0
+inception4a.branch2.1.conv    ,             35223552,                       15058587,                              0,                        2346116,                        2164133,                              0
 inception4a.branch3.0.conv    ,              1505280,                              0,                              0,                              0,                              0,                              0
-inception4a.branch3.1.conv    ,              1354752,                         663747,                              0,                          88893,                              0,                              0
+inception4a.branch3.1.conv    ,              1354752,                         582342,                              0,                          88893,                          81405,                              0
 inception4a.branch4.1.conv    ,              6021120,                              0,                              0,                              0,                              0,                              0
 inception4b.branch1.conv      ,             16056320,                              0,                              0,                              0,                              0,                              0
 inception4b.branch2.0.conv    ,             11239424,                              0,                              0,                              0,                              0,                              0
-inception4b.branch2.1.conv    ,             44255232,                       21630262,                              0,                        2956174,                              0,                              0
+inception4b.branch2.1.conv    ,             44255232,                       18969054,                              0,                        2956174,                        2661208,                              0
 inception4b.branch3.0.conv    ,              2408448,                              0,                              0,                              0,                              0,                              0
-inception4b.branch3.1.conv    ,              2709504,                        1325523,                              0,                         179757,                              0,                              0
+inception4b.branch3.1.conv    ,              2709504,                        1168656,                              0,                         179757,                         156867,                              0
 inception4b.branch4.1.conv    ,              6422528,                              0,                              0,                              0,                              0,                              0
 inception4c.branch1.conv      ,             12845056,                              0,                              0,                              0,                              0,                              0
 inception4c.branch2.0.conv    ,             12845056,                              0,                              0,                              0,                              0,                              0
-inception4c.branch2.1.conv    ,             57802752,                       28314787,                              0,                        3797853,                              0,                              0
+inception4c.branch2.1.conv    ,             57802752,                       24898894,                              0,                        3797853,                        3415893,                              0
 inception4c.branch3.0.conv    ,              2408448,                              0,                              0,                              0,                              0,                              0
-inception4c.branch3.1.conv    ,              2709504,                        1319493,                              0,                         185983,                              0,                              0
+inception4c.branch3.1.conv    ,              2709504,                        1161449,                              0,                         185983,                         158044,                              0
 inception4c.branch4.1.conv    ,              6422528,                              0,                              0,                              0,                              0,                              0
 inception4d.branch1.conv      ,             11239424,                              0,                              0,                              0,                              0,                              0
 inception4d.branch2.0.conv    ,             14450688,                              0,                              0,                              0,                              0,                              0
-inception4d.branch2.1.conv    ,             73156608,                       35790858,                              0,                        4851702,                              0,                              0
+inception4d.branch2.1.conv    ,             73156608,                       31689652,                              0,                        4851702,                        4101206,                              0
 inception4d.branch3.0.conv    ,              3211264,                              0,                              0,                              0,                              0,                              0
-inception4d.branch3.1.conv    ,              3612672,                        1769427,                              0,                         237613,                              0,                              0
+inception4d.branch3.1.conv    ,              3612672,                        1567251,                              0,                         237613,                         202176,                              0
 inception4d.branch4.1.conv    ,              6422528,                              0,                              0,                              0,                              0,                              0
 inception4e.branch1.conv      ,             26492928,                              0,                              0,                              0,                              0,                              0
 inception4e.branch2.0.conv    ,             16558080,                              0,                              0,                              0,                              0,                              0
-inception4e.branch2.1.conv    ,             90316800,                       44161962,                              0,                        6014038,                              0,                              0
+inception4e.branch2.1.conv    ,             90316800,                       39454372,                              0,                        6014038,                        4707590,                              0
 inception4e.branch3.0.conv    ,              3311616,                              0,                              0,                              0,                              0,                              0
-inception4e.branch3.1.conv    ,              7225344,                        3539923,                              0,                         474353,                              0,                              0
+inception4e.branch3.1.conv    ,              7225344,                        3145986,                              0,                         474353,                         393937,                              0
 inception4e.branch4.1.conv    ,             13246464,                              0,                              0,                              0,                              0,                              0
 inception5a.branch1.conv      ,             10436608,                              0,                              0,                              0,                              0,                              0
 inception5a.branch2.0.conv    ,              6522880,                              0,                              0,                              0,                              0,                              0
