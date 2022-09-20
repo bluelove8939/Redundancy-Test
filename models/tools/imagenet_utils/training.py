@@ -10,8 +10,10 @@ import torch.utils.data
 import torch.utils.data.distributed
 from torch.utils.data import Subset
 
+from models.tools.progressbar import progressbar
 
-def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False):
+
+def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False, pbar_header=''):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -24,6 +26,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False
 
     # switch to train mode
     model.train()
+
+    print(f"{pbar_header} {progressbar(0, 100, scale=50)} {progress.summary()}", end='')
 
     end = time.time()
     for i, (images, target) in enumerate(train_loader):
@@ -54,17 +58,22 @@ def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False
         end = time.time()
 
         if i % args.print_freq == 0:
-            progress.display(i + 1)
+            # progress.display(i + 1)
+            print(f"\r{pbar_header} {progressbar(i, len(train_loader), scale=50)} {progress.summary()}", end='')
+
+    print(f"\r{pbar_header} {progressbar(100, 100, scale=50)} {progress.summary()}", end='\n')
 
 
-def validate(val_loader, model, criterion, args):
+def validate(val_loader, model, criterion, args, at_prune=False, pbar_header=''):
     def run_validate(loader, base_progress=0):
-        print("run_validate called")
+        # print("run_validate called")
         with torch.no_grad():
+            print(f"{pbar_header} {progressbar(0, 100, scale=50)} {progress.summary()}", end='')
+
             end = time.time()
             for i, (images, target) in enumerate(loader):
                 i = base_progress + i
-                if torch.cuda.is_available():
+                if torch.cuda.is_available() and at_prune is False:
                     images = images.cuda(args.gpu, non_blocking=True)
                     target = target.cuda(args.gpu, non_blocking=True)
 
@@ -83,7 +92,11 @@ def validate(val_loader, model, criterion, args):
                 end = time.time()
 
                 if i % args.print_freq == 0:
-                    progress.display(i + 1)
+                    # progress.display(i + 1)
+                    print(f"\r{pbar_header} {progressbar(i, len(loader), scale=50)} {progress.summary()}", end='')
+
+            print(f"\r{pbar_header} {progressbar(100, 100, scale=50)} {progress.summary()}", end='\n')
+
 
     batch_time = AverageMeter('Time', ':6.3f', Summary.NONE)
     losses = AverageMeter('Loss', ':.4e', Summary.NONE)
@@ -185,6 +198,11 @@ class ProgressMeter(object):
         entries = [" *"]
         entries += [meter.summary() for meter in self.meters]
         print(' '.join(entries))
+
+    def summary(self):
+        entries = [" *"]
+        entries += [meter.summary() for meter in self.meters]
+        return ' '.join(entries)
 
     def _get_batch_fmtstr(self, num_batches):
         num_digits = len(str(num_batches // 1))

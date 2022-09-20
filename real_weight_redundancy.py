@@ -5,7 +5,7 @@ import torch
 import numpy as np
 
 from redundant_op import generate_ifm, generate_lowered_ifm
-from models.model_presets import imagenet_clust_pretrained, ClustModelConfig
+from models.model_presets import imagenet_clust_pretrained, imagenet_pruned, ClustModelConfig, ChkpointModelConfig
 
 
 exception_keys = ['matched', 'stride exception', 'out of index exception',
@@ -54,8 +54,8 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
     return result
 
 
-def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
-                             max_iter: int or None=None, save_path: str or None=None):
+def analyze_model_redundancy(config: ChkpointModelConfig or ClustModelConfig,
+                             step_range: int=128, max_iter: int or None=None, save_path: str or None=None):
     # Test header
     save_logs = list()
     save_logs.append("Test Configs")
@@ -71,7 +71,10 @@ def analyze_model_redundancy(config: ClustModelConfig, step_range: int=128,
     print(f"- max iter: {max_iter}\n")
 
     model_result = {}
-    model = config.model_type(quantize=True, weights=config.default_weights)
+    if isinstance(config, ClustModelConfig):
+        model = config.model_type(quantize=True, weights=config.default_weights)
+    else:
+        model = config.model_type(weights=config.default_weights)
     weights = config.weights
 
     # Extract input tensor shape of each layer
@@ -187,7 +190,7 @@ if __name__ == '__main__':
     save_dirname = os.path.join(os.curdir, 'results', 'real_weight_redundancy')
     os.makedirs(save_dirname, exist_ok=True)
 
-    for model_name in imagenet_clust_pretrained.keys():
+    for model_name in imagenet_pruned.keys():
         # if 'resnet' not in model_name.lower():
         #     continue
 

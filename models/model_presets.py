@@ -49,6 +49,16 @@ class ClustModelConfig(_MetaModelConfig):
         model.load_state_dict(self.weights)
         return model
 
+class ChkpointModelConfig(_MetaModelConfig):
+    def __init__(self, model_type, weights=None, default_traces=tuple(), default_weights=None):
+        super(ChkpointModelConfig, self).__init__(model_type, weights, default_traces)
+        self.default_weights = default_weights
+
+    def generate(self):
+        model = self.model_type(weights=self.default_weights)
+        model.load_state_dict(self.weights)
+        return model
+
 
 imagenet_pretrained = {
     'ResNet50': ModelConfig(
@@ -119,5 +129,13 @@ imagenet_clust_pretrained = {
         torchvision.models.quantization.googlenet,
         weights=torch.load(os.path.join('C:/', 'torch_data', 'clustered_weights', 'model_dict_googlenet.pt')),
         default_weights=torchvision.models.quantization.GoogLeNet_QuantizedWeights.IMAGENET1K_FBGEMM_V1,
+    ),
+}
+
+imagenet_pruned = {
+    'AlexNet': ChkpointModelConfig(
+        torchvision.models.alexnet,
+        weights=torch.load(os.path.join('C:/', 'torch_data', 'pruned_weights', 'AlexNet.pth')),
+        default_weights=torchvision.models.AlexNet_Weights.IMAGENET1K_V1.IMAGENET1K_V1,
     ),
 }
