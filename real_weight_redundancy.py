@@ -5,7 +5,7 @@ import torch
 import numpy as np
 
 from redundant_op import generate_ifm, generate_lowered_ifm
-from utils.model_presets import imagenet_clust_pretrained, ClustModelConfig
+from models.model_presets import imagenet_clust_pretrained, ClustModelConfig
 
 
 exception_keys = ['matched', 'stride exception', 'out of index exception',
@@ -26,16 +26,16 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
             dr = (OW * dv + dh) // S
 
             for lidx, line in enumerate(lowered_if_map):
-                # stride exception
-                if dv % S != 0 or dh % S != 0:
-                    result['stride exception'] += 1
-                    continue
-
-                # out of index exception
-                oh = (lidx + offset) % OW
-                if oh - (dh // S) < 0 or oh - (dh // S) >= OW or (lidx + offset) - dr < 0:
-                    result['out of index exception'] += 1
-                    continue
+                # # stride exception
+                # if dv % S != 0 or dh % S != 0:
+                #     result['stride exception'] += 1
+                #     continue
+                #
+                # # out of index exception
+                # oh = (lidx + offset) % OW
+                # if oh - (dh // S) < 0 or oh - (dh // S) >= OW or (lidx + offset) - dr < 0:
+                #     result['out of index exception'] += 1
+                #     continue
 
                 # step range exception
                 if lidx - dr < 0:
@@ -43,11 +43,11 @@ def analyze_with_real_kernel(lowered_if_map, lowered_kernel, W, H, FW, FH, S, P,
                     continue
 
                 # unknown exception
-                if line[i1] != lowered_if_map[lidx - dr][i2]:
-                    result['unknown exception'] += 1
+                if line[i1] == lowered_if_map[lidx - dr][i2]:
+                    result['matched'] += 1
                     continue
 
-                result['matched'] += 1
+                result['unknown exception'] += 1
 
             break  # check only one redundancy element (duplicated redunadncy)
 
@@ -188,7 +188,10 @@ if __name__ == '__main__':
     os.makedirs(save_dirname, exist_ok=True)
 
     for model_name in imagenet_clust_pretrained.keys():
-        for step_range in [16, 32, 64, 128, 256, None]:
+        if 'resnet' not in model_name.lower():
+            continue
+
+        for step_range in [128, 256, None]:
             save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.csv')
             result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=max_iter,
                                               step_range=step_range, save_path=save_path)
