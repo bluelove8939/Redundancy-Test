@@ -188,10 +188,10 @@ if __name__ == '__main__':
     os.makedirs(save_dirname, exist_ok=True)
 
     for model_name in imagenet_clust_pretrained.keys():
-        if 'resnet' not in model_name.lower():
-            continue
+        # if 'resnet' not in model_name.lower():
+        #     continue
 
-        for step_range in [128, 256, None]:
+        for step_range in [32, 64, 128, 256, None]:
             save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.csv')
             result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=max_iter,
                                               step_range=step_range, save_path=save_path)

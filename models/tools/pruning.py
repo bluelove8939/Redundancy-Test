@@ -2,7 +2,8 @@ import torch
 import torch.nn.utils.prune as prune
 
 from models.tools.training import train, test
-
+from models.tools.imagenet_utils.training import train as imagenet_train
+from models.tools.imagenet_utils.training import validate as imagenet_validate
 
 class PruneModule(object):
     def __init__(self, tuning_dataloader, loss_fn, optimizer):
@@ -40,7 +41,7 @@ class PruneModule(object):
         print(f"- threshold: {threshold}")
         print(f"- step: {step}")
         print(f"- max_iter: {max_iter}")
-        print(f"- pass_normal: {pass_normal}")
+        print(f"- pass_normal: {pass_normal}\n")
 
         if not pass_normal:
             print("\ntesting normal model...")
@@ -60,7 +61,7 @@ class PruneModule(object):
 
         while True:
             step_cnt += 1
-            print(f"iter: {step_cnt}")
+            print(f"\niter: {step_cnt}")
             pruning_step_succeed = False
             current_density *= (1 - step)
             self.prune_layer(model, step)
@@ -69,6 +70,68 @@ class PruneModule(object):
             for _ in range(max_iter):
                 train(self.tuning_dataloader, model, loss_fn=self.loss_fn, optimizer=self.optimizer, verbose=verbose)
                 current_acc, current_avg_loss = test(self.tuning_dataloader, model, loss_fn=self.loss_fn, verbose=verbose)
+
+                if current_acc > normal_acc - threshold:
+                    pruning_step_succeed = True
+                    break
+
+            if not pruning_step_succeed:
+                model.load_state_dict(chkpoint)
+                print(f"pruning failed: acc({current_acc:.4f}) avg_loss({current_avg_loss:.4f})")
+                print(f"pruning amount: {chkpoint_pruning_amount}")
+                return model
+
+            chkpoint = model.state_dict()
+            chkpoint_pruning_amount = 1 - current_density
+            chkpoint_acc = current_acc
+            chkpoint_avg_loss = current_avg_loss
+            print(f"check point generated: pamount({chkpoint_pruning_amount:.4f}) acc({chkpoint_acc:.4f}) "
+                  f"avg_loss({chkpoint_avg_loss:.4f})\n")
+
+            if round(chkpoint_pruning_amount, 1) >= target_amount:
+                break
+
+        model.load_state_dict(chkpoint)
+        print(f"pruning succeed: acc({chkpoint_acc}) avg_loss({chkpoint_avg_loss})")
+        print(f"pruning_amount: {chkpoint_pruning_amount}")
+        return model
+
+    def prune_imagenet_model(self, model, args, target_amount=0.3, threshold=1, step=0.1, max_iter=5, pass_normal=False, verbose=2):
+        print("\nPruning Configs")
+        print(f"- target_amount: {target_amount:.4f}")
+        print(f"- loss_fn: {self.loss_fn}")
+        print(f"- threshold: {threshold}")
+        print(f"- step: {step}")
+        print(f"- max_iter: {max_iter}")
+        print(f"- pass_normal: {pass_normal}\n")
+
+        if not pass_normal:
+            print("\ntesting normal model...")
+            normal_acc, normal_avg_loss = imagenet_validate(self.tuning_dataloader, model, criterion=self.loss_fn, args=args)
+            print(f"normal model test result: acc({normal_acc:.4f}) avg_loss({normal_avg_loss:.4f})")
+        else:
+            print("normal model test passed")
+            normal_acc = 100
+            normal_avg_loss = 0
+
+        chkpoint = model.state_dict()
+        chkpoint_pruning_amount = 0
+        chkpoint_acc = 0
+        chkpoint_avg_loss = 0
+        current_density = 1
+        step_cnt = 0
+
+        while True:
+            step_cnt += 1
+            print(f"\niter: {step_cnt}")
+            pruning_step_succeed = False
+            current_density *= (1 - step)
+            self.prune_layer(model, step)
+            current_acc, current_avg_loss = 100, 0
+
+            for _ in range(max_iter):
+                imagenet_train(self.tuning_dataloader, model, criterion=self.loss_fn, epoch=1, optimizer=self.optimizer, args=args)
+                current_acc, current_avg_loss = imagenet_validate(self.tuning_dataloader, model, criterion=self.loss_fn, args=args)
 
                 if current_acc > normal_acc - threshold:
                     pruning_step_succeed = True
