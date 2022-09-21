@@ -11,7 +11,7 @@ import torch.nn.utils.prune as prune
 from models.tools.pruning import PruneModule
 from models.model_presets import imagenet_pretrained
 from models.tools.imagenet_utils.args_generator import args
-from models.tools.imagenet_utils.training import validate
+from models.tools.imagenet_utils.training import train, validate
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -67,34 +67,25 @@ if __name__ == '__main__':
                                 weight_decay=args.weight_decay)
 
     # Check normal accuracy and loss
-    normal_acc, normal_loss = validate(val_loader=test_loader, model=model, criterion=criterion, args=args)
+    normal_acc, normal_loss = validate(val_loader=test_loader, model=model, criterion=criterion, args=args, pbar_header='normal acc')
 
-    # # Pruning
-    # # tuning_size = int(len(train_dataset) * 0.05)
-    # # tuning_dataset, _ = torch.utils.data.random_split(train_dataset, lengths=[
-    # #     tuning_size, len(train_dataset) - tuning_size])
-    # # tuning_loader = torch.utils.data.DataLoader(
-    # #     tuning_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
-    # #     num_workers=args.workers, pin_memory=True, sampler=train_sampler)
-    #
-    # pmodule = PruneModule(train_dataset=train_dataset, optimizer=optimizer, loss_fn=criterion, tuning_ratio=0.05)
-    # pmodel = pmodule.prune_imagenet_model(model, target_amount=0.7, threshold=0.5, step=0.1, max_iter=10,
-    #                                       pass_normal=False, verbose=1, args=args)
-    # pmodule.remove_prune_model(pmodel)
-
-    def remove_prune_model(self, module: torch.nn.Module):
+    def remove_prune_model(module: torch.nn.Module):
         for sub_idx, sub_module in module._modules.items():
             if isinstance(sub_module, torch.nn.Conv2d):
                 prune.remove(sub_module, 'weight')
             elif isinstance(sub_module, torch.nn.Module):
-                self.remove_prune_model(sub_module)
+                remove_prune_model(sub_module)
 
-    def prune_layer(self, model, step):
+    def prune_layer(model, step):
         for sub_idx, sub_module in model._modules.items():
             if isinstance(sub_module, torch.nn.Conv2d):
                 prune.l1_unstructured(sub_module, 'weight', amount=step)
             elif isinstance(sub_module, torch.nn.Module):
-                self.prune_layer(sub_module, step)
+                prune_layer(sub_module, step)
+
+    prune_layer(model, step=0.5)
+    train(train_loader, model, criterion, optimizer, epoch=5, args=args, at_prune=False, pbar_header='prune tuning')
+    remove_prune_model(model)
 
     # Check pruned accuracy and loss
     pruned_acc, pruned_loss = validate(val_loader=test_loader, model=model, criterion=criterion, args=args)
@@ -107,4 +98,4 @@ if __name__ == '__main__':
     save_filename = model_name + '.pth'
     save_path = os.path.join(save_dirname, save_filename)
 
-    torch.save(pmodel.state_dict(), save_path)
+    torch.save(model.state_dict(), save_path)

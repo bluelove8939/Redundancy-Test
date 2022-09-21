@@ -27,41 +27,42 @@ def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False
     # switch to train mode
     model.train()
 
-    print(f"{pbar_header} {progressbar(0, 100, scale=50)} {progress.summary()}", end='')
+    for e in range(epoch):
+        print(f"{pbar_header} [epoch {e+1}]{progressbar(0, 100, scale=50)} {progress.summary()}", end='')
 
-    end = time.time()
-    for i, (images, target) in enumerate(train_loader):
-        # measure data loading time
-        data_time.update(time.time() - end)
-
-        if torch.cuda.is_available() and at_prune is False:
-            images = images.cuda(args.gpu, non_blocking=True)
-            target = target.cuda(args.gpu, non_blocking=True)
-
-        # compute output
-        output = model(images)
-        loss = criterion(output, target)
-
-        # measure accuracy and record loss
-        acc1, acc5 = accuracy(output, target, topk=(1, 5))
-        losses.update(loss.item(), images.size(0))
-        top1.update(acc1[0], images.size(0))
-        top5.update(acc5[0], images.size(0))
-
-        # compute gradient and do SGD step
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        # measure elapsed time
-        batch_time.update(time.time() - end)
         end = time.time()
+        for i, (images, target) in enumerate(train_loader):
+            # measure data loading time
+            data_time.update(time.time() - end)
 
-        if i % args.print_freq == 0:
-            # progress.display(i + 1)
-            print(f"\r{pbar_header} {progressbar(i, len(train_loader), scale=50)} {progress.summary()}", end='')
+            if torch.cuda.is_available() and at_prune is False:
+                images = images.cuda(args.gpu, non_blocking=True)
+                target = target.cuda(args.gpu, non_blocking=True)
 
-    print(f"\r{pbar_header} {progressbar(100, 100, scale=50)} {progress.summary()}", end='\n')
+            # compute output
+            output = model(images)
+            loss = criterion(output, target)
+
+            # measure accuracy and record loss
+            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+            losses.update(loss.item(), images.size(0))
+            top1.update(acc1[0], images.size(0))
+            top5.update(acc5[0], images.size(0))
+
+            # compute gradient and do SGD step
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+            if i % args.print_freq == 0:
+                # progress.display(i + 1)
+                print(f"\r{pbar_header} [epoch {e+1}]{progressbar(i, len(train_loader), scale=50)} {progress.summary()}", end='')
+
+        print(f"\r{pbar_header} [epoch {e+1}]{progressbar(100, 100, scale=50)} {progress.summary()}", end='\n')
 
 
 def validate(val_loader, model, criterion, args, at_prune=False, pbar_header=''):
