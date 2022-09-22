@@ -9,7 +9,7 @@ import torchvision.datasets as datasets
 import torch.nn.utils.prune as prune
 
 from models.tools.pruning import PruneModule
-from models.model_presets import imagenet_pretrained
+from models.model_presets import imagenet_pruned
 from models.tools.imagenet_utils.args_generator import args
 from models.tools.imagenet_utils.training import train, validate
 
@@ -58,54 +58,21 @@ test_loader = torch.utils.data.DataLoader(
 if __name__ == '__main__':
     # Test configuration
     model_name = 'AlexNet'
-    config = imagenet_pretrained[model_name]
-    model = config.generate().to(device)
+    config = imagenet_pruned[model_name]
+    normal_model = config.generate(load_chkpoint=False).to(device)
+    pruned_model = config.generate(load_chkpoint=True).to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), 0.0005,
-                                momentum=args.momentum,
-                                weight_decay=args.weight_decay)
-
-    # Check normal accuracy and loss
-    normal_acc, normal_loss = validate(val_loader=test_loader, model=model, criterion=criterion, args=args, pbar_header='normal acc')
-
-    def remove_prune_model(module: torch.nn.Module):
-        for sub_idx, sub_module in module._modules.items():
-            if isinstance(sub_module, torch.nn.Conv2d):
-                prune.remove(sub_module, 'weight')
-            elif isinstance(sub_module, torch.nn.Module):
-                remove_prune_model(sub_module)
-
-    def prune_layer(model, step):
-        for sub_idx, sub_module in model._modules.items():
-            if isinstance(sub_module, torch.nn.Conv2d):
-                prune.l1_unstructured(sub_module, 'weight', amount=step)
-            elif isinstance(sub_module, torch.nn.Module):
-                prune_layer(sub_module, step)
-
-    prune_layer(model, step=0.5)
-
-    iter_cnt = 0
-    iter_max = 10
-
-    while True:
-        train(train_loader, model, criterion, optimizer, epoch=1, args=args, at_prune=False, pbar_header='prune tuning')
-        pruned_acc, pruned_loss = validate(val_loader=test_loader, model=model, criterion=criterion, args=args,
-                                           pbar_header=f'tune{iter_cnt:2d} acc')
-
-        if (normal_acc - pruned_acc < 1) or (iter_cnt >= iter_max):
-            break
-        iter_cnt += 1
-
-    remove_prune_model(model)
+    normal_acc, normal_loss = validate(val_loader=test_loader, model=normal_model, criterion=criterion, args=args, pbar_header='normal acc')
+    pruned_acc, pruned_loss = validate(val_loader=test_loader, model=pruned_model, criterion=criterion, args=args, pbar_header='pruned acc')
 
     # Check pruned accuracy and loss
     print(f"normal) Acc: {normal_acc}  Loss: {normal_loss}")
     print(f"pruned) Acc: {pruned_acc}  Loss: {pruned_loss}")
 
-    # Save state dictionary
-    save_dirname = os.path.join('C://', 'torch_data', 'pruned_weights')
-    save_filename = model_name + '.pth'
-    save_path = os.path.join(save_dirname, save_filename)
-
-    torch.save(model.state_dict(), save_path)
+    # # Save state dictionary
+    # save_dirname = os.path.join('C://', 'torch_data', 'pruned_weights')
+    # save_filename = model_name + '.pth'
+    # save_path = os.path.join(save_dirname, save_filename)
+    #
+    # torch.save(model.state_dict(), save_path)

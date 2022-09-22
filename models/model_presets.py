@@ -50,14 +50,19 @@ class ClustModelConfig(_MetaModelConfig):
         return model
 
 class ChkpointModelConfig(_MetaModelConfig):
-    def __init__(self, model_type, weights=None, default_traces=tuple(), default_weights=None):
+    def __init__(self, model_type, chkpoint, weights=None, default_traces=tuple(), default_weights=None):
         super(ChkpointModelConfig, self).__init__(model_type, weights, default_traces)
+        self.chkpoint = chkpoint
         self.default_weights = default_weights
 
-    def generate(self):
-        model = self.model_type(weights=self.default_weights)
-        model.load_state_dict(self.weights)
+    def generate(self, load_chkpoint=False):
+        model = self.model_type(weights=self.weights)
+        if load_chkpoint:
+            model.load_state_dict(torch.load(self.chkpoint))
         return model
+
+    def get_chkpoint(self):
+        return torch.load(self.chkpoint)
 
 
 imagenet_pretrained = {
@@ -135,7 +140,7 @@ imagenet_clust_pretrained = {
 imagenet_pruned = {
     'AlexNet': ChkpointModelConfig(
         torchvision.models.alexnet,
-        weights=torch.load(os.path.join('C:/', 'torch_data', 'pruned_weights', 'AlexNet.pth')),
-        default_weights=torchvision.models.AlexNet_Weights.IMAGENET1K_V1.IMAGENET1K_V1,
+        chkpoint=os.path.join('C:/', 'torch_data', 'pruned_weights', 'AlexNet.pth'),
+        weights=torchvision.models.AlexNet_Weights.IMAGENET1K_V1.IMAGENET1K_V1,
     ),
 }

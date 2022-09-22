@@ -6,10 +6,10 @@ import numpy as np
 
 from utils.analyze import analyze_with_real_kernel, exception_keys
 from redundant_op import generate_ifm, generate_lowered_ifm
-from models.model_presets import imagenet_clust_pretrained, ClustModelConfig
+from models.model_presets import imagenet_clust_pretrained, imagenet_pruned, ClustModelConfig, ChkpointModelConfig
 
 
-def analyze_model_redundancy(config: ClustModelConfig,
+def analyze_model_redundancy(config: ChkpointModelConfig or ClustModelConfig,
                              step_range: int=128, max_iter: int or None=None, save_path: str or None=None):
     # Test header
     save_logs = list()
@@ -26,8 +26,14 @@ def analyze_model_redundancy(config: ClustModelConfig,
     print(f"- max iter: {max_iter}\n")
 
     model_result = {}
-    model = config.model_type(quantize=True, weights=config.default_weights)
-    weights = config.weights
+    if isinstance(config, ClustModelConfig):
+        model = config.model_type(quantize=True, weights=config.default_weights)
+        weights = config.weights
+    elif isinstance(config, ChkpointModelConfig):
+        model = config.model_type(weights=config.default_weights)
+        weights = config.get_chkpoint()
+    else:
+        raise Exception(f"Invalid config ({type(config).__name__})")
 
     # Extract input tensor shape of each layer
     W, H = 224, 224  # size of input image
@@ -38,7 +44,7 @@ def analyze_model_redundancy(config: ClustModelConfig,
 
     def generate_input_shape_hook(input_shape_dict, layer_name):
         def hook(model, input_tensor, output_tensor):
-            input_shape_dict[layer_name] = input_tensor[0].int_repr().shape
+            input_shape_dict[layer_name] = input_tensor[0].shape
         return hook
 
     for lname, layer in model.named_modules():
@@ -81,7 +87,7 @@ def analyze_model_redundancy(config: ClustModelConfig,
                          f"S: {S}  P: {P}  (OW, OH): {OW, OH}")
 
         # Extract weight and generate lowered weight
-        filters = param.int_repr().detach().numpy()
+        filters = param.detach().to('cpu').numpy()
         lowered_weights = filters.reshape((OC, C, FW*FH))
 
         # Generate lowered input feature map
@@ -139,14 +145,11 @@ def analyze_model_redundancy(config: ClustModelConfig,
 if __name__ == '__main__':
     max_iter = None
 
-    save_dirname = os.path.join(os.curdir, 'results', 'real_weight_redundancy')
+    save_dirname = os.path.join(os.curdir, 'results', 'pruned_weight_redundancy')
     os.makedirs(save_dirname, exist_ok=True)
 
-    for model_name in imagenet_clust_pretrained.keys():
-        # if 'resnet' not in model_name.lower():
-        #     continue
-
+    for model_name in imagenet_pruned.keys():
         for step_range in [32, 64, 128, 256, None]:
             save_path = os.path.join(save_dirname, f'{model_name}_{step_range}.csv')
-            result = analyze_model_redundancy(config=imagenet_clust_pretrained[model_name], max_iter=max_iter,
+            result = analyze_model_redundancy(config=imagenet_pruned[model_name], max_iter=max_iter,
                                               step_range=step_range, save_path=save_path)

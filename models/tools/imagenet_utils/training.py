@@ -125,7 +125,7 @@ def validate(val_loader, model, criterion, args, at_prune=False, pbar_header='')
             num_workers=args.workers, pin_memory=True)
         run_validate(aux_val_loader, len(val_loader))
 
-    progress.display_summary()
+    # progress.display_summary()
 
     return top1.avg, losses.avg
 
