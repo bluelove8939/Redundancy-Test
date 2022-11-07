@@ -6,7 +6,7 @@ from models.tools.progressbar import progressbar
 
 
 class QuantizationModule(object):
-    def __init__(self, tuning_dataloader, loss_fn, optimizer):
+    def __init__(self, tuning_dataloader=None, loss_fn=None, optimizer=None):
         self.tuning_dataloader = tuning_dataloader
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -32,6 +32,9 @@ class QuantizationModule(object):
         return model_quantized
 
     def calibrate(self, model, citer, verbose=2):
+        if self.tuning_dataloader is None or self.loss_fn is None or self.optimizer is None:
+            raise Exception('Error!')
+
         device = 'cpu'
         maxiter = min(len(self.tuning_dataloader), citer)
         if verbose == 1:
