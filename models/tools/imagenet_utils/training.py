@@ -13,7 +13,7 @@ from torch.utils.data import Subset
 from models.tools.progressbar import progressbar
 
 
-def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False, pbar_header=''):
+def train(train_loader, model, criterion, optimizer, epoch, args, device='default', at_prune=False, pbar_header=''):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -35,9 +35,12 @@ def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False
             # measure data loading time
             data_time.update(time.time() - end)
 
-            if torch.cuda.is_available() and at_prune is False:
+            if torch.cuda.is_available() and device == 'default' and at_prune is False:
                 images = images.cuda(args.gpu, non_blocking=True)
                 target = target.cuda(args.gpu, non_blocking=True)
+            else:
+                images.to(device)
+                target.to(device)
 
             # compute output
             output = model(images)
@@ -65,7 +68,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args, at_prune=False
         print(f"\r{pbar_header} [epoch {e+1}]{progressbar(100, 100, scale=50)} {progress.summary()}", end='\n')
 
 
-def validate(val_loader, model, criterion, args, at_prune=False, pbar_header=''):
+def validate(val_loader, model, criterion, args, device='default', at_prune=False, pbar_header=''):
     def run_validate(loader, base_progress=0):
         # print("run_validate called")
         with torch.no_grad():
@@ -74,9 +77,12 @@ def validate(val_loader, model, criterion, args, at_prune=False, pbar_header='')
             end = time.time()
             for i, (images, target) in enumerate(loader):
                 i = base_progress + i
-                if torch.cuda.is_available() and at_prune is False:
+                if torch.cuda.is_available() and device == 'default' and at_prune is False:
                     images = images.cuda(args.gpu, non_blocking=True)
                     target = target.cuda(args.gpu, non_blocking=True)
+                else:
+                    images.to(device)
+                    target.to(device)
 
                 # compute output
                 output = model(images)

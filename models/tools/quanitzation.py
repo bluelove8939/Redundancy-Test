@@ -6,9 +6,9 @@ from models.tools.progressbar import progressbar
 
 
 class QuantizationModule(object):
-    def __init__(self, tuning_dataloader=None, loss_fn=None, optimizer=None):
+    def __init__(self, tuning_dataloader=None, criterion=None, optimizer=None):
         self.tuning_dataloader = tuning_dataloader
-        self.loss_fn = loss_fn
+        self.criterion = criterion
         self.optimizer = optimizer
 
     def quantize(self, model, default_qconfig='fbgemm', citer=0, verbose=2):
@@ -19,7 +19,7 @@ class QuantizationModule(object):
         qconfig_dict = {"": qconfig}
 
         print("\nQuantization Configs")
-        print(f"- loss_fn: {self.loss_fn}")
+        print(f"- criterion: {self.criterion}")
         print(f"- qconfig: {default_qconfig}")
         print(f"- device:  {device}")
 
@@ -32,7 +32,7 @@ class QuantizationModule(object):
         return model_quantized
 
     def calibrate(self, model, citer, verbose=2):
-        if self.tuning_dataloader is None or self.loss_fn is None or self.optimizer is None:
+        if self.tuning_dataloader is None or self.criterion is None or self.optimizer is None:
             raise Exception('Error!')
 
         device = 'cpu'
@@ -52,7 +52,7 @@ class QuantizationModule(object):
                 if verbose == 1:
                     print(f'\r{progressbar(cnt, maxiter, 50)}  calibration iter: {cnt:3d}/{maxiter:3d}', end='')
                 elif verbose:
-                    print(f'calibration iter: {cnt:3d}/{maxiter:3d}', end='')
+                    print(f'calibration iter: {cnt:3d}/{maxiter:3d}')
 
                 cnt += 1
                 if cnt > citer: break

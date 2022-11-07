@@ -3,7 +3,9 @@ import torch
 
 from models.model_presets import imagenet_pretrained
 from models.tools.quanitzation import QuantizationModule
-from models.tools.imagenet_utils.dataset_loader import val_loader
+from models.tools.imagenet_utils.dataset_loader import val_loader, train_loader
+from models.tools.imagenet_utils.training import validate
+from models.tools.imagenet_utils.args_generator import args
 
 
 # device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -13,24 +15,18 @@ if __name__ == '__main__':
     config = imagenet_pretrained['VGG16']
     model = config.generate()
 
-    qmod = QuantizationModule()
-    qmodel = qmod.quantize(model=model)
+    tuning_dataloader = train_loader
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.0001)
 
-    for name, layer in qmodel.named_modules():
-        if 'conv' in type(layer).__name__.lower():
-            layer.register_forward_hook(lambda x, y, z: print(name + " called!"))
+    qmod = QuantizationModule(tuning_dataloader=tuning_dataloader, criterion=criterion, optimizer=optimizer)
+    qmodel = qmod.quantize(model=model, citer=10, verbose=1)
 
-    iter_cnt = 0
-    max_iter = 1
+    dirname = os.path.join(os.curdir, 'model_output')
+    filename = 'VGG16_quantized_tuned_citer_10.pth'
 
-    if __name__ == '__main__':
-        for X, y in val_loader:
-            if iter_cnt >= max_iter:
-                break
-            else:
-                iter_cnt += 1
+    os.makedirs(dirname, exist_ok=True)
 
-            X, y = X.to('cpu'), y.to('cpu')
-            qmodel(X)
+    torch.save(qmodel.state_dict(), os.path.join(dirname, filename))
 
-    torch.save(qmodel.state_dict(), os.path.join(os.curdir, 'model_output', 'VGG16_quantized.pth'))
+    validate(val_loader=val_loader, model=qmodel, criterion=criterion, args=args, device='cpu', at_prune=False, pbar_header='')
