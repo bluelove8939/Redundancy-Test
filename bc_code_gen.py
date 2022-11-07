@@ -2,20 +2,17 @@ import os
 import subprocess
 import math
 import inspect
-from inspect import currentframe, getframeinfo
 
-content = list()
-linenum = list()
+from utils.verilog_generator import VerilogGenerator
 
-def register_line(code: str) -> None:
-    lnum = inspect.stack()[-1].lineno
 
-    for lidx, line in enumerate(code.split('\n')):
-        content.append(line)
-        linenum.append(lnum + lidx)
+dirname = os.path.join(os.curdir, 'code_gen')
+filename = 'bubble_collapse_shifter'
+
+vgen = VerilogGenerator(dirname=dirname, filename=filename)
 
 # Header
-register_line(code='''module BCShifter128 #(  // Bubble-Collapsing Shifter
+vgen.register_line(code='''module BCShifter128 #(  // Bubble-Collapsing Shifter
     parameter WORD_WIDTH    = 8,
     parameter PSUM_WIDTH    = 8,
     parameter DIST_WIDTH    = 7,
@@ -52,7 +49,7 @@ endgenerate
 
 # Generate shifters
 for numel in range(2, 129, 1):
-    register_line(code=f"""
+    vgen.register_line(code=f"""
 // Shifter {numel}
 wire [{numel}*WORD_WIDTH-1:0] i_lifm_l{numel};
 wire [{numel}*WORD_WIDTH-1:0] o_lifm_l{numel};
@@ -78,12 +75,12 @@ VShifter #(
 
 # Generate output signal
 for idx in range(128):
-    register_line(code=f"""
+    vgen.register_line(code=f"""
 assign lifm_comp[{idx}] = {' | '.join([f'o_lifm_l{numel}[{idx}*WORD_WIDTH+:WORD_WIDTH]' for numel in range(max(idx+1, 2), 129, 1)])};
 assign mt_comp[{idx}]   = {' | '.join([f'o_mt_l{numel}[{idx}*DIST_WIDTH*MAX_LIFM_RSIZ+:DIST_WIDTH*MAX_LIFM_RSIZ]' for numel in range(max(idx+1, 2), 129, 1)])};""")
 
 # Tail
-register_line(code='''
+vgen.register_line(code='''
 endmodule
 
 
@@ -102,54 +99,7 @@ assign o_vec = i_vec >> (stride * WORD_WIDTH);
     
 endmodule''')
 
-# Save source code as Verilog file (.v)
-dirname = os.path.join(os.curdir, 'code_gen')
-filename = 'bubble_collapse_shifter'
-vfilename = filename + '.v'
-ofilename = filename + '.vvp'
-clog_filename = filename + '_compile.log'
-
-os.makedirs(dirname, exist_ok=True)
-
-# Compile and check error
-with open(os.path.join(dirname, vfilename), 'wt') as file:
-    file.write('\n'.join(content))
-
-with open(os.path.join(dirname, clog_filename), 'wt') as file:
-    compile_result = subprocess.run(f"iverilog -o \"{os.path.join(dirname, ofilename)}\" {os.path.join(dirname, vfilename)}", stdout=file, stderr=file)
-
-elinenum = []
-enames = {}
-
-with open(os.path.join(dirname, clog_filename), 'rt') as file:
-    for eline in file.readlines():
-        eparsed = eline.split(':')
-
-        if len(eparsed) < 3:
-            continue
-
-        efile = eparsed[0]
-        eidx = int(eparsed[1]) - 1
-        ename = ':'.join(eparsed[2:]).strip()
-
-        if linenum[eidx] not in elinenum:
-            elinenum.append(linenum[eidx])
-
-        if linenum[eidx] not in enames.keys():
-            enames[linenum[eidx]] = []
-
-        if ename not in enames[linenum[eidx]]:
-            enames[linenum[eidx]].append(ename)
 
 if __name__ == '__main__':
-    print(f"Compile Configs")
-    print(f"- verilog file:      {os.path.join(dirname, vfilename)}")
-    print(f"- output file:       {os.path.join(dirname, ofilename)}")
-    print(f"- compile log file:  {os.path.join(dirname, clog_filename)}\n")
-
-    for el in elinenum:
-        enn = '\n'.join(f'  [{ei + 1}] {en}' for ei, en in enumerate(enames[el]))
-        print(f"ln {el:4d}\n{enn}", end='\n')
-
-    # for eoffset in range(0, len(linenum), 20):
-    #     print(linenum[eoffset:eoffset+20])
+    vgen.compile()
+    vgen.print_result()
