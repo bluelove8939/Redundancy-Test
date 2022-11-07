@@ -1,32 +1,34 @@
 import os
 import torch
 
-from models.model_presets import imagenet_pretrained
-from models.tools.quanitzation import QuantizationModule
-from models.tools.imagenet_utils.dataset_loader import val_loader, train_loader
-from models.tools.imagenet_utils.training import validate
+from models.model_presets import imagenet_pretrained                             # normal model
+from models.tools.quanitzation import QuantizationModule                         # quantization module
+from models.tools.imagenet_utils.dataset_loader import val_loader, train_loader  # datasets (imagenet)
+from models.tools.imagenet_utils.training import validate                        # validation method (measuring acc)
 from models.tools.imagenet_utils.args_generator import args
 
 
-# device = "cuda" if torch.cuda.is_available() else "cpu"
-
-
 if __name__ == '__main__':
+    # Generate model without quantization
     config = imagenet_pretrained['VGG16']
     model = config.generate()
 
+    # Quantization setup
     tuning_dataloader = train_loader
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.0001)
 
+    # Quantize model
     qmod = QuantizationModule(tuning_dataloader=tuning_dataloader, criterion=criterion, optimizer=optimizer)
-    qmodel = qmod.quantize(model=model, citer=10, verbose=1)
+    qmodel = qmod.quantize(model=model, citer=10, verbose=1)  # calibration
+    # qmodel = qmod.quantize(model=model, citer=0)              # no calibration
 
+    # Save quantized parameters
     dirname = os.path.join(os.curdir, 'model_output')
     filename = 'VGG16_quantized_tuned_citer_10.pth'
 
     os.makedirs(dirname, exist_ok=True)
-
     torch.save(qmodel.state_dict(), os.path.join(dirname, filename))
 
+    # Check acuracy degradation
     validate(val_loader=val_loader, model=qmodel, criterion=criterion, args=args, device='cpu', at_prune=False, pbar_header='')
