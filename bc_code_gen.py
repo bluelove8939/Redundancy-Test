@@ -1,7 +1,5 @@
 import os
-import subprocess
 import math
-import inspect
 
 from utils.verilog_generator import VerilogGenerator
 
