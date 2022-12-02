@@ -38,11 +38,11 @@ val_dset_dir_candidate = [
 ]
 
 for path in train_dset_dir_candidate:
-    if not os.path.isdir(path):
+    if not os.path.isdir(train_dataset_dirname):
         train_dataset_dirname = path
 
 for path in val_dset_dir_candidate:
-    if not os.path.isdir(path):
+    if not os.path.isdir(val_dataset_dirname):
         val_dataset_dirname = path
 
 train_dataset = datasets.ImageFolder(
