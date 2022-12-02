@@ -27,14 +27,14 @@ train_dset_dir_candidate = [
     os.path.join(args.data, 'train'),
     os.path.join('C://', 'torch_data', 'imagenet', 'train'),
     os.path.join('E://', 'torch_data', 'imagenet', 'train'),
-    "/home/shared/ImageNet/Imagenet_2012/Imagenet_Data_tar/train/train",
+    "/home/shared/Imagenet_data/train/train/",
 ]
 
 val_dset_dir_candidate = [
     os.path.join(args.data, 'val'),
     os.path.join('C://', 'torch_data', 'imagenet', 'val'),
     os.path.join('E://', 'torch_data', 'imagenet', 'val'),
-    "/home/shared/ImageNet/Imagenet_2012/Imagenet_Data_tar/val/val",
+    "/home/shared/Imagenet_data/val/val/",
 ]
 
 for path in train_dset_dir_candidate:
