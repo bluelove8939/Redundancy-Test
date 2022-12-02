@@ -1,0 +1,20 @@
+# Test Configs
+# - test: real weight redundancy test
+# - model: alexnet
+# - step range: 64
+# - max iter: None
+
+
+# features.0                      type: Conv2d           C:   3  OC:  64  (W, H): (224, 224)  (FW, FH): (11, 11)  S: 4  P: 2  (OW, OH): (55, 55)
+# features.3                      type: Conv2d           C:  64  OC: 192  (W, H): (27, 27)  (FW, FH): (5, 5)  S: 1  P: 2  (OW, OH): (27, 27)
+# features.6                      type: Conv2d           C: 192  OC: 384  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+# features.8                      type: Conv2d           C: 384  OC: 256  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+# features.10                     type: Conv2d           C: 256  OC: 256  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+
+
+layer name                    , total               , matched                       , stride exception              , out of index exception        , step range exception          , unknown exception             
+features.0                    ,             70276800,                        1230811,                              0,                              0,                        1106503,                       32220286
+features.3                    ,            223948800,                       82645881,                              0,                              0,                       15254279,                        5148364
+features.6                    ,            112140288,                       35610047,                              0,                              0,                        4826757,                        3405007
+features.8                    ,            149520384,                       47595312,                              0,                              0,                        6362685,                        4526819
+features.10                   ,             99680256,                       32087491,                              0,                              0,                        4069044,                        3109263

@@ -1,0 +1,20 @@
+# Test Configs
+# - test: real weight redundancy test
+# - model: alexnet
+# - step range: 128
+# - max iter: None
+
+
+# features.0                      type: Conv2d           C:   3  OC:  64  (W, H): (224, 224)  (FW, FH): (11, 11)  S: 4  P: 2  (OW, OH): (55, 55)
+# features.3                      type: Conv2d           C:  64  OC: 192  (W, H): (27, 27)  (FW, FH): (5, 5)  S: 1  P: 2  (OW, OH): (27, 27)
+# features.6                      type: Conv2d           C: 192  OC: 384  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+# features.8                      type: Conv2d           C: 384  OC: 256  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+# features.10                     type: Conv2d           C: 256  OC: 256  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+
+
+layer name                    , total               , matched                       , stride exception              , out of index exception        , step range exception          , unknown exception             
+features.0                    ,             70276800,                        1244634,                              0,                              0,                         553656,                       32759310
+features.3                    ,            223948800,                       89509623,                              0,                              0,                        7747229,                        5791672
+features.6                    ,            112140288,                       37093708,                              0,                              0,                        3217838,                        3530265
+features.8                    ,            149520384,                       49552061,                              0,                              0,                        4241790,                        4690965
+features.10                   ,             99680256,                       33335641,                              0,                              0,                        2712696,                        3217461

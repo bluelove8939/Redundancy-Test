@@ -10,7 +10,7 @@ from models.tools.imagenet_utils.args_generator import args
 
 if __name__ == '__main__':
     # Generate model without quantization
-    config = imagenet_pretrained['VGG16']
+    config = imagenet_pretrained['AlexNet']
     model = config.generate()
 
     # Quantization setup
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     # Save quantized parameters
     dirname = os.path.join(os.curdir, 'model_output')
-    filename = 'VGG16_quantized_tuned_citer_10.pth'
+    filename = 'AlexNet_quantized_tuned_citer_10.pth'
 
     os.makedirs(dirname, exist_ok=True)
     torch.save(qmodel.state_dict(), os.path.join(dirname, filename))

@@ -1,0 +1,20 @@
+# Test Configs
+# - test: real weight redundancy test
+# - model: alexnet
+# - step range: 32
+# - max iter: None
+
+
+# features.0                      type: Conv2d           C:   3  OC:  64  (W, H): (224, 224)  (FW, FH): (11, 11)  S: 4  P: 2  (OW, OH): (55, 55)
+# features.3                      type: Conv2d           C:  64  OC: 192  (W, H): (27, 27)  (FW, FH): (5, 5)  S: 1  P: 2  (OW, OH): (27, 27)
+# features.6                      type: Conv2d           C: 192  OC: 384  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+# features.8                      type: Conv2d           C: 384  OC: 256  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+# features.10                     type: Conv2d           C: 256  OC: 256  (W, H): (13, 13)  (FW, FH): (3, 3)  S: 1  P: 1  (OW, OH): (13, 13)
+
+
+layer name                    , total               , matched                       , stride exception              , out of index exception        , step range exception          , unknown exception             
+features.0                    ,             70276800,                        1208397,                              0,                              0,                        2174014,                       31175189
+features.3                    ,            223948800,                       71201454,                              0,                              0,                       27816521,                        4030549
+features.6                    ,            112140288,                       31600210,                              0,                              0,                        9208869,                        3032732
+features.8                    ,            149520384,                       42289708,                              0,                              0,                       12154540,                        4040568
+features.10                   ,             99680256,                       28697956,                              0,                              0,                        7785032,                        2782810

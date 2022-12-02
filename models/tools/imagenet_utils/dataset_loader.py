@@ -13,6 +13,7 @@ dset_dir_candidate = [
     args.data,
     os.path.join('C://', 'torch_data', 'imagenet'),
     os.path.join('E://', 'torch_data', 'imagenet'),
+    "/home/shared/ImageNet/Imagenet_2012/Imagenet_Data_tar/",
 ]
 
 for path in dset_dir_candidate:

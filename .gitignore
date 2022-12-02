@@ -1,1 +1,4 @@
 /results/redundant_op/
+/model_output/
+*__pycache__/
+.idea/
