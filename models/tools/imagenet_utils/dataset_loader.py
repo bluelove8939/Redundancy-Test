@@ -7,21 +7,46 @@ import torchvision.datasets as datasets
 from .args_generator import args
 
 # Dataset configuration
-dataset_dirname = args.data
+# dataset_dirname = args.data
+#
+# dset_dir_candidate = [
+#     args.data,
+#     os.path.join('C://', 'torch_data', 'imagenet'),
+#     os.path.join('E://', 'torch_data', 'imagenet'),
+#     "/home/shared/ImageNet/Imagenet_2012/Imagenet_Data_tar/",
+# ]
+#
+# for path in dset_dir_candidate:
+#     if not os.path.isdir(dataset_dirname):
+#         dataset_dirname = path
 
-dset_dir_candidate = [
-    args.data,
-    os.path.join('C://', 'torch_data', 'imagenet'),
-    os.path.join('E://', 'torch_data', 'imagenet'),
-    "/home/shared/ImageNet/Imagenet_2012/Imagenet_Data_tar/",
+train_dataset_dirname = os.path.join(args.data, 'train')
+val_dataset_dirname = os.path.join(args.data, 'val')
+
+train_dset_dir_candidate = [
+    os.path.join(args.data, 'train'),
+    os.path.join('C://', 'torch_data', 'imagenet', 'train'),
+    os.path.join('E://', 'torch_data', 'imagenet', 'train'),
+    "/home/shared/ImageNet/Imagenet_2012/Imagenet_Data_tar/train/train",
 ]
 
-for path in dset_dir_candidate:
-    if not os.path.isdir(dataset_dirname):
-        dataset_dirname = path
+val_dset_dir_candidate = [
+    os.path.join(args.data, 'val'),
+    os.path.join('C://', 'torch_data', 'imagenet', 'val'),
+    os.path.join('E://', 'torch_data', 'imagenet', 'val'),
+    "/home/shared/ImageNet/Imagenet_2012/Imagenet_Data_tar/val/val",
+]
+
+for path in train_dset_dir_candidate:
+    if not os.path.isdir(path):
+        train_dataset_dirname = path
+
+for path in val_dset_dir_candidate:
+    if not os.path.isdir(path):
+        val_dataset_dirname = path
 
 train_dataset = datasets.ImageFolder(
-        os.path.join(dataset_dirname, 'train'),
+        train_dataset_dirname,
         transforms.Compose([
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
@@ -30,7 +55,7 @@ train_dataset = datasets.ImageFolder(
         ]))
 
 test_dataset = datasets.ImageFolder(
-        os.path.join(dataset_dirname, 'val'),
+        val_dataset_dirname,
         transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
